@@ -506,6 +506,52 @@ export default function OpportunityDetail() {
     }
   };
 
+  const handleDeleteArtifact = async (artifactId: number, artifactUrl: string) => {
+    if (!confirm("Are you sure you want to delete this DSP? This action cannot be undone.")) return;
+
+    try {
+      // Extract storage path from URL if it's a storage URL
+      if (artifactUrl.includes("/storage/v1/object/")) {
+        const urlParts = artifactUrl.split("/storage/v1/object/");
+        if (urlParts[1]) {
+          const pathWithBucket = urlParts[1].split("?")[0];
+          const storagePath = pathWithBucket.substring(pathWithBucket.indexOf("/") + 1);
+          
+          // Delete from storage
+          const { error: storageError } = await supabase.storage
+            .from("artifacts-files")
+            .remove([storagePath]);
+
+          if (storageError) {
+            console.error("Storage deletion warning:", storageError);
+            // Continue with DB deletion even if storage fails
+          }
+        }
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from("artifacts")
+        .delete()
+        .eq("artifact_id", artifactId);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Success",
+        description: "DSP deleted successfully",
+      });
+
+      fetchOpportunityDetails();
+    } catch (error: any) {
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -752,6 +798,14 @@ export default function OpportunityDetail() {
                                   </TooltipContent>
                                 )}
                               </Tooltip>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteArtifact(artifact.artifact_id, artifact.artifact_url)}
+                                title="Delete DSP"
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
                             </>
                           ) : (
                             <>
