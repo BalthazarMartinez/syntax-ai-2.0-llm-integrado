@@ -1,6 +1,6 @@
 /**
- * Template fijo para generar el HTML del Deal Strategy Plan
- * El LLM solo genera el contenido JSON, este template define el formato
+ * Template para generar el Markdown del Deal Strategy Plan
+ * El LLM genera el contenido JSON, este template define el formato Markdown
  */
 
 export interface DSPData {
@@ -93,801 +93,219 @@ export interface DSPData {
 }
 
 /**
- * Genera el HTML completo del Deal Strategy Plan a partir del JSON estructurado
+ * Genera el Markdown completo del Deal Strategy Plan a partir del JSON estructurado
  * @param dspData - Datos estructurados del DSP
  * @param opportunityName - Nombre de la oportunidad
- * @returns HTML completo del documento
+ * @returns Markdown completo del documento
  */
-export function generateDealStrategyPlanHTML(
+export function generateDealStrategyPlanMarkdown(
   dspData: DSPData,
   opportunityName: string
 ): string {
   const data = dspData.deal_strategy_plan;
 
-  return `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deal Strategy Plan - ${escapeHtml(opportunityName)}</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      color: #2c3e50;
-      background: #f8f9fa;
-      padding: 40px 20px;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      padding: 60px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-    
-    .header {
-      text-align: center;
-      border-bottom: 4px solid #3498db;
-      padding-bottom: 30px;
-      margin-bottom: 50px;
-    }
-    
-    .header h1 {
-      font-size: 2.5em;
-      color: #2c3e50;
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-    
-    .header .opportunity-name {
-      font-size: 1.5em;
-      color: #7f8c8d;
-      font-weight: 300;
-    }
-    
-    .section {
-      margin-bottom: 50px;
-      page-break-inside: avoid;
-    }
-    
-    .section-title {
-      color: #2c3e50;
-      font-size: 1.8em;
-      font-weight: 700;
-      margin-bottom: 25px;
-      padding-bottom: 12px;
-      border-bottom: 3px solid #3498db;
-      display: flex;
-      align-items: center;
-    }
-    
-    .section-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      background: #3498db;
-      color: white;
-      border-radius: 50%;
-      margin-right: 15px;
-      font-size: 0.8em;
-      flex-shrink: 0;
-    }
-    
-    .purpose-box {
-      background: #ecf7fd;
-      border-left: 4px solid #3498db;
-      padding: 15px 20px;
-      margin-bottom: 25px;
-      border-radius: 4px;
-      font-style: italic;
-      color: #5a6c7d;
-    }
-    
-    .subsection {
-      margin-bottom: 25px;
-    }
-    
-    .subsection-title {
-      color: #34495e;
-      font-size: 1.2em;
-      font-weight: 600;
-      margin-bottom: 12px;
-      padding-left: 10px;
-      border-left: 3px solid #95a5a6;
-    }
-    
-    .content {
-      color: #444;
-      line-height: 1.8;
-      padding-left: 15px;
-    }
-    
-    .content p {
-      margin-bottom: 10px;
-    }
-    
-    .content ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    
-    .content li {
-      padding: 8px 0;
-      padding-left: 30px;
-      position: relative;
-    }
-    
-    .content li:before {
-      content: "▸";
-      position: absolute;
-      left: 10px;
-      color: #3498db;
-      font-weight: bold;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 20px 0;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    
-    th {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 16px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.95em;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #ecf0f1;
-      color: #555;
-    }
-    
-    tbody tr:hover {
-      background: #f8f9fa;
-    }
-    
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .badge {
-      display: inline-block;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.85em;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .badge-high {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      color: white;
-    }
-    
-    .badge-medium {
-      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-      color: white;
-    }
-    
-    .badge-low {
-      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-      color: #555;
-    }
-    
-    .badge-info {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-    
-    .metadata {
-      margin-top: 60px;
-      padding: 30px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      border-radius: 8px;
-      border-top: 4px solid #667eea;
-    }
-    
-    .metadata h3 {
-      color: #2c3e50;
-      margin-bottom: 20px;
-      font-size: 1.3em;
-    }
-    
-    .metadata-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-    }
-    
-    .metadata-item {
-      background: white;
-      padding: 15px;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    .metadata-label {
-      font-weight: 600;
-      color: #7f8c8d;
-      font-size: 0.85em;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-    
-    .metadata-value {
-      color: #2c3e50;
-      font-size: 0.95em;
-    }
-    
-    .empty-state {
-      color: #95a5a6;
-      font-style: italic;
-      padding: 20px;
-      text-align: center;
-      background: #f8f9fa;
-      border-radius: 6px;
-    }
-    
-    @media print {
-      body {
-        padding: 0;
-        background: white;
-      }
-      
-      .container {
-        box-shadow: none;
-        padding: 40px;
-      }
-      
-      .section {
-        page-break-inside: avoid;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Deal Strategy Plan</h1>
-      <div class="opportunity-name">${escapeHtml(opportunityName)}</div>
-    </div>
+  let md = `# Deal Strategy Plan\n\n`;
+  md += `**${opportunityName}**\n\n`;
+  md += `---\n\n`;
 
-    <!-- 1. Objetivo del Proyecto -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">1</span>
-        Objetivo del Proyecto
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.project_objective.purpose)}</div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Objetivo Estratégico</h3>
-        <div class="content">
-          <p>${escapeHtml(data.project_objective.strategic_objective) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Criterios de Éxito</h3>
-        <div class="content">
-          <p>${escapeHtml(data.project_objective.success_criteria) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      ${data.project_objective.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.project_objective.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 2. Use Case -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">2</span>
-        Use Case
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.use_case.purpose)}</div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Problema a Resolver</h3>
-        <div class="content">
-          <p>${escapeHtml(data.use_case.problem_to_solve) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Consecuencias Actuales</h3>
-        <div class="content">
-          <p>${escapeHtml(data.use_case.current_consequences) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Impacto en el Negocio</h3>
-        <div class="content">
-          <p>${escapeHtml(data.use_case.business_impact) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Nivel de Prioridad</h3>
-        <div class="content">
-          ${getBadgeForPriority(data.use_case.priority_level)}
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Justificación de Prioridad</h3>
-        <div class="content">
-          <p>${escapeHtml(data.use_case.priority_rationale) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      ${data.use_case.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.use_case.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 3. Bundles -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">3</span>
-        Bundles
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.bundles.purpose)}</div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Bundle Recomendado</h3>
-        <div class="content">
-          <p>${escapeHtml(data.bundles.recommended_bundle) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      ${data.bundles.bundle_options_considered?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Opciones Consideradas</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Bundle</th>
-                <th>Razón de Fit</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.bundles.bundle_options_considered.map(opt => `
-                <tr>
-                  <td><strong>${escapeHtml(opt.bundle)}</strong></td>
-                  <td>${escapeHtml(opt.fit_reason)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : ''}
-      
-      ${data.bundles.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.bundles.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 4. Preliminary Solution Approach -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">4</span>
-        Preliminary Solution Approach (High-Level)
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.preliminary_solution_approach.purpose)}</div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Abordaje Recomendado</h3>
-        <div class="content">
-          <p>${escapeHtml(data.preliminary_solution_approach.recommended_approach) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Justificación del Abordaje</h3>
-        <div class="content">
-          <p>${escapeHtml(data.preliminary_solution_approach.approach_rationale) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      ${data.preliminary_solution_approach.assumptions?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Supuestos</h3>
-          <div class="content">
-            <ul>
-              ${data.preliminary_solution_approach.assumptions.map(assumption => 
-                `<li>${escapeHtml(assumption)}</li>`
-              ).join('')}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-      
-      ${data.preliminary_solution_approach.open_questions?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Preguntas Abiertas</h3>
-          <div class="content">
-            <ul>
-              ${data.preliminary_solution_approach.open_questions.map(question => 
-                `<li>${escapeHtml(question)}</li>`
-              ).join('')}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-      
-      ${data.preliminary_solution_approach.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.preliminary_solution_approach.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 5. Description of Functionalities -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">5</span>
-        Description of Functionalities
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.functionalities_description.purpose)}</div>
-      
-      ${data.functionalities_description.expected_functionalities?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Funcionalidades Esperadas</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Funcionalidad</th>
-                <th>Descripción</th>
-                <th>Valor de Negocio</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.functionalities_description.expected_functionalities.map(func => `
-                <tr>
-                  <td><strong>${escapeHtml(func.name)}</strong></td>
-                  <td>${escapeHtml(func.description)}</td>
-                  <td>${escapeHtml(func.business_value)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : '<div class="empty-state">No se definieron funcionalidades esperadas</div>'}
-      
-      ${data.functionalities_description.out_of_scope?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Fuera de Alcance</h3>
-          <div class="content">
-            <ul>
-              ${data.functionalities_description.out_of_scope.map(item => 
-                `<li>${escapeHtml(item)}</li>`
-              ).join('')}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-      
-      ${data.functionalities_description.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.functionalities_description.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 6. Technical -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">6</span>
-        Technical
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.technical.purpose)}</div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Ambiente Cloud</h3>
-        <div class="content">
-          <p>${escapeHtml(data.technical.cloud_environment) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Experiencia Cloud</h3>
-        <div class="content">
-          <p>${escapeHtml(data.technical.cloud_experience) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Responsable de Infraestructura</h3>
-        <div class="content">
-          <p>${escapeHtml(data.technical.infrastructure_owner) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      ${data.technical.required_data?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Datos Requeridos</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Tipo de Dato</th>
-                <th>Disponibilidad</th>
-                <th>Ubicación</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.technical.required_data.map(d => `
-                <tr>
-                  <td>${escapeHtml(d.data_type)}</td>
-                  <td>${escapeHtml(d.availability)}</td>
-                  <td>${escapeHtml(d.location)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : ''}
-      
-      ${data.technical.data_gaps_or_risks?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Brechas o Riesgos de Datos</h3>
-          <div class="content">
-            <ul>
-              ${data.technical.data_gaps_or_risks.map(risk => 
-                `<li>${escapeHtml(risk)}</li>`
-              ).join('')}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-      
-      ${data.technical.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.technical.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 7. Competitiveness and Strategic Positioning -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">7</span>
-        Competitiveness and Strategic Positioning
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.competitiveness_and_strategic_positioning.purpose)}</div>
-      
-      ${data.competitiveness_and_strategic_positioning.competitors_or_alternatives?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Competidores o Alternativas</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Estado/Rol</th>
-                <th>Fortalezas</th>
-                <th>Debilidades</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.competitiveness_and_strategic_positioning.competitors_or_alternatives.map(comp => `
-                <tr>
-                  <td><strong>${escapeHtml(comp.name)}</strong></td>
-                  <td>${escapeHtml(comp.status_or_role)}</td>
-                  <td>${escapeHtml(comp.strengths)}</td>
-                  <td>${escapeHtml(comp.weaknesses)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : ''}
-      
-      ${data.competitiveness_and_strategic_positioning.santex_advantages?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Ventajas de Santex</h3>
-          <div class="content">
-            <ul>
-              ${data.competitiveness_and_strategic_positioning.santex_advantages.map(advantage => 
-                `<li>${escapeHtml(advantage)}</li>`
-              ).join('')}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-      
-      <div class="subsection">
-        <h3 class="subsection-title">Narrativa de Diferenciación</h3>
-        <div class="content">
-          <p>${escapeHtml(data.competitiveness_and_strategic_positioning.differentiation_narrative) || '<span class="empty-state">N/A</span>'}</p>
-        </div>
-      </div>
-      
-      ${data.competitiveness_and_strategic_positioning.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.competitiveness_and_strategic_positioning.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- 8. Roadmap Comercial / Próximos Pasos -->
-    <div class="section">
-      <h2 class="section-title">
-        <span class="section-number">8</span>
-        Roadmap Comercial / Próximos Pasos
-      </h2>
-      <div class="purpose-box">${escapeHtml(data.commercial_roadmap_next_steps.purpose)}</div>
-      
-      ${data.commercial_roadmap_next_steps.next_steps?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Próximos Pasos</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Paso</th>
-                <th>Responsable</th>
-                <th>Fecha Esperada</th>
-                <th>Criterios de Salida</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.commercial_roadmap_next_steps.next_steps.map(step => `
-                <tr>
-                  <td>${escapeHtml(step.step)}</td>
-                  <td>${escapeHtml(step.owner)}</td>
-                  <td>${escapeHtml(step.expected_date_or_window)}</td>
-                  <td>${escapeHtml(step.exit_criteria)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      ` : '<div class="empty-state">No se definieron próximos pasos</div>'}
-      
-      ${data.commercial_roadmap_next_steps.dependencies?.length > 0 ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Dependencias</h3>
-          <div class="content">
-            <ul>
-              ${data.commercial_roadmap_next_steps.dependencies.map(dep => 
-                `<li>${escapeHtml(dep)}</li>`
-              ).join('')}
-            </ul>
-          </div>
-        </div>
-      ` : ''}
-      
-      ${data.commercial_roadmap_next_steps.notes ? `
-        <div class="subsection">
-          <h3 class="subsection-title">Notas</h3>
-          <div class="content">
-            <p>${escapeHtml(data.commercial_roadmap_next_steps.notes)}</p>
-          </div>
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- Metadata -->
-    <div class="metadata">
-      <h3>Información del Documento</h3>
-      <div class="metadata-grid">
-        <div class="metadata-item">
-          <div class="metadata-label">Opportunity ID</div>
-          <div class="metadata-value">${escapeHtml(data.meta.opportunity_id)}</div>
-        </div>
-        <div class="metadata-item">
-          <div class="metadata-label">Inputs Utilizados</div>
-          <div class="metadata-value">${data.meta.generated_from_inputs.map(escapeHtml).join(', ')}</div>
-        </div>
-        <div class="metadata-item">
-          <div class="metadata-label">Nivel de Confianza</div>
-          <div class="metadata-value">
-            <span class="badge badge-info">${escapeHtml(data.meta.confidence_level) || 'N/A'}</span>
-          </div>
-        </div>
-        <div class="metadata-item">
-          <div class="metadata-label">Fecha de Generación</div>
-          <div class="metadata-value">${new Date().toLocaleString('es-ES', { 
-            dateStyle: 'full', 
-            timeStyle: 'short' 
-          })}</div>
-        </div>
-      </div>
-      ${data.meta.missing_information_summary ? `
-        <div class="metadata-item" style="margin-top: 15px; grid-column: 1 / -1;">
-          <div class="metadata-label">Información Faltante</div>
-          <div class="metadata-value">${escapeHtml(data.meta.missing_information_summary)}</div>
-        </div>
-      ` : ''}
-    </div>
-  </div>
-</body>
-</html>`;
-}
-
-/**
- * Escapa caracteres HTML para prevenir inyección
- */
-function escapeHtml(text: string): string {
-  if (!text) return '';
-  const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
-}
-
-/**
- * Genera el badge HTML apropiado según el nivel de prioridad
- */
-function getBadgeForPriority(priority: string): string {
-  if (!priority || priority === 'N/A') {
-    return '<span class="empty-state">N/A</span>';
+  // 1. Objetivo del Proyecto
+  md += `## 1. Objetivo del Proyecto\n\n`;
+  md += `> ${data.project_objective.purpose}\n\n`;
+  md += `### Objetivo Estratégico\n\n`;
+  md += `${data.project_objective.strategic_objective || 'N/A'}\n\n`;
+  md += `### Criterios de Éxito\n\n`;
+  md += `${data.project_objective.success_criteria || 'N/A'}\n\n`;
+  if (data.project_objective.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.project_objective.notes}\n\n`;
   }
-  
-  const priorityLower = priority.toLowerCase();
-  let badgeClass = 'badge-info';
-  
-  if (priorityLower.includes('high') || priorityLower.includes('alta')) {
-    badgeClass = 'badge-high';
-  } else if (priorityLower.includes('medium') || priorityLower.includes('media')) {
-    badgeClass = 'badge-medium';
-  } else if (priorityLower.includes('low') || priorityLower.includes('baja')) {
-    badgeClass = 'badge-low';
+  md += `---\n\n`;
+
+  // 2. Use Case
+  md += `## 2. Use Case\n\n`;
+  md += `> ${data.use_case.purpose}\n\n`;
+  md += `### Problema a Resolver\n\n`;
+  md += `${data.use_case.problem_to_solve || 'N/A'}\n\n`;
+  md += `### Consecuencias Actuales\n\n`;
+  md += `${data.use_case.current_consequences || 'N/A'}\n\n`;
+  md += `### Impacto en el Negocio\n\n`;
+  md += `${data.use_case.business_impact || 'N/A'}\n\n`;
+  md += `### Nivel de Prioridad\n\n`;
+  md += `**${data.use_case.priority_level}**\n\n`;
+  md += `### Justificación de Prioridad\n\n`;
+  md += `${data.use_case.priority_rationale || 'N/A'}\n\n`;
+  if (data.use_case.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.use_case.notes}\n\n`;
   }
-  
-  return `<span class="badge ${badgeClass}">${escapeHtml(priority)}</span>`;
+  md += `---\n\n`;
+
+  // 3. Bundles
+  md += `## 3. Bundles\n\n`;
+  md += `> ${data.bundles.purpose}\n\n`;
+  md += `### Bundle Recomendado\n\n`;
+  md += `${data.bundles.recommended_bundle || 'N/A'}\n\n`;
+  if (data.bundles.bundle_options_considered?.length > 0) {
+    md += `### Opciones Consideradas\n\n`;
+    md += `| Bundle | Razón de Fit |\n`;
+    md += `|--------|-------------|\n`;
+    data.bundles.bundle_options_considered.forEach(opt => {
+      md += `| ${opt.bundle} | ${opt.fit_reason} |\n`;
+    });
+    md += `\n`;
+  }
+  if (data.bundles.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.bundles.notes}\n\n`;
+  }
+  md += `---\n\n`;
+
+  // 4. Enfoque Preliminar de Solución
+  md += `## 4. Enfoque Preliminar de Solución\n\n`;
+  md += `> ${data.preliminary_solution_approach.purpose}\n\n`;
+  md += `### Enfoque Recomendado\n\n`;
+  md += `${data.preliminary_solution_approach.recommended_approach || 'N/A'}\n\n`;
+  md += `### Fundamentación del Enfoque\n\n`;
+  md += `${data.preliminary_solution_approach.approach_rationale || 'N/A'}\n\n`;
+  if (data.preliminary_solution_approach.assumptions?.length > 0) {
+    md += `### Supuestos\n\n`;
+    data.preliminary_solution_approach.assumptions.forEach(assumption => {
+      md += `- ${assumption}\n`;
+    });
+    md += `\n`;
+  }
+  if (data.preliminary_solution_approach.open_questions?.length > 0) {
+    md += `### Preguntas Abiertas\n\n`;
+    data.preliminary_solution_approach.open_questions.forEach(question => {
+      md += `- ${question}\n`;
+    });
+    md += `\n`;
+  }
+  if (data.preliminary_solution_approach.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.preliminary_solution_approach.notes}\n\n`;
+  }
+  md += `---\n\n`;
+
+  // 5. Descripción de Funcionalidades
+  md += `## 5. Descripción de Funcionalidades\n\n`;
+  md += `> ${data.functionalities_description.purpose}\n\n`;
+  if (data.functionalities_description.expected_functionalities?.length > 0) {
+    md += `### Funcionalidades Esperadas\n\n`;
+    md += `| Funcionalidad | Descripción | Valor de Negocio |\n`;
+    md += `|---------------|-------------|------------------|\n`;
+    data.functionalities_description.expected_functionalities.forEach(func => {
+      md += `| ${func.name} | ${func.description} | ${func.business_value} |\n`;
+    });
+    md += `\n`;
+  }
+  if (data.functionalities_description.out_of_scope?.length > 0) {
+    md += `### Fuera de Alcance\n\n`;
+    data.functionalities_description.out_of_scope.forEach(item => {
+      md += `- ${item}\n`;
+    });
+    md += `\n`;
+  }
+  if (data.functionalities_description.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.functionalities_description.notes}\n\n`;
+  }
+  md += `---\n\n`;
+
+  // 6. Aspectos Técnicos
+  md += `## 6. Aspectos Técnicos\n\n`;
+  md += `> ${data.technical.purpose}\n\n`;
+  md += `### Entorno Cloud\n\n`;
+  md += `${data.technical.cloud_environment || 'N/A'}\n\n`;
+  md += `### Experiencia Cloud\n\n`;
+  md += `${data.technical.cloud_experience || 'N/A'}\n\n`;
+  md += `### Propietario de Infraestructura\n\n`;
+  md += `${data.technical.infrastructure_owner || 'N/A'}\n\n`;
+  if (data.technical.required_data?.length > 0) {
+    md += `### Datos Requeridos\n\n`;
+    md += `| Tipo de Dato | Disponibilidad | Ubicación |\n`;
+    md += `|--------------|----------------|----------|\n`;
+    data.technical.required_data.forEach(d => {
+      md += `| ${d.data_type} | ${d.availability} | ${d.location} |\n`;
+    });
+    md += `\n`;
+  }
+  if (data.technical.data_gaps_or_risks?.length > 0) {
+    md += `### Gaps o Riesgos de Datos\n\n`;
+    data.technical.data_gaps_or_risks.forEach(risk => {
+      md += `- ${risk}\n`;
+    });
+    md += `\n`;
+  }
+  if (data.technical.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.technical.notes}\n\n`;
+  }
+  md += `---\n\n`;
+
+  // 7. Competitividad y Posicionamiento Estratégico
+  md += `## 7. Competitividad y Posicionamiento Estratégico\n\n`;
+  md += `> ${data.competitiveness_and_strategic_positioning.purpose}\n\n`;
+  if (data.competitiveness_and_strategic_positioning.competitors_or_alternatives?.length > 0) {
+    md += `### Competidores o Alternativas\n\n`;
+    md += `| Nombre | Estado/Rol | Fortalezas | Debilidades |\n`;
+    md += `|--------|------------|------------|-------------|\n`;
+    data.competitiveness_and_strategic_positioning.competitors_or_alternatives.forEach(comp => {
+      md += `| ${comp.name} | ${comp.status_or_role} | ${comp.strengths} | ${comp.weaknesses} |\n`;
+    });
+    md += `\n`;
+  }
+  if (data.competitiveness_and_strategic_positioning.santex_advantages?.length > 0) {
+    md += `### Ventajas de Santex\n\n`;
+    data.competitiveness_and_strategic_positioning.santex_advantages.forEach(adv => {
+      md += `- ${adv}\n`;
+    });
+    md += `\n`;
+  }
+  md += `### Narrativa de Diferenciación\n\n`;
+  md += `${data.competitiveness_and_strategic_positioning.differentiation_narrative || 'N/A'}\n\n`;
+  if (data.competitiveness_and_strategic_positioning.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.competitiveness_and_strategic_positioning.notes}\n\n`;
+  }
+  md += `---\n\n`;
+
+  // 8. Roadmap Comercial y Siguientes Pasos
+  md += `## 8. Roadmap Comercial y Siguientes Pasos\n\n`;
+  md += `> ${data.commercial_roadmap_next_steps.purpose}\n\n`;
+  if (data.commercial_roadmap_next_steps.next_steps?.length > 0) {
+    md += `### Siguientes Pasos\n\n`;
+    md += `| Paso | Responsable | Fecha Esperada | Criterios de Salida |\n`;
+    md += `|------|-------------|----------------|---------------------|\n`;
+    data.commercial_roadmap_next_steps.next_steps.forEach(step => {
+      md += `| ${step.step} | ${step.owner} | ${step.expected_date_or_window} | ${step.exit_criteria} |\n`;
+    });
+    md += `\n`;
+  }
+  if (data.commercial_roadmap_next_steps.dependencies?.length > 0) {
+    md += `### Dependencias\n\n`;
+    data.commercial_roadmap_next_steps.dependencies.forEach(dep => {
+      md += `- ${dep}\n`;
+    });
+    md += `\n`;
+  }
+  if (data.commercial_roadmap_next_steps.notes) {
+    md += `### Notas\n\n`;
+    md += `${data.commercial_roadmap_next_steps.notes}\n\n`;
+  }
+  md += `---\n\n`;
+
+  // Metadata
+  md += `## Metadata\n\n`;
+  md += `**Opportunity ID:** ${data.meta.opportunity_id}\n\n`;
+  md += `**Generated from inputs:**\n`;
+  data.meta.generated_from_inputs.forEach(input => {
+    md += `- ${input}\n`;
+  });
+  md += `\n`;
+  md += `**Confidence Level:** ${data.meta.confidence_level}\n\n`;
+  md += `**Missing Information Summary:**\n\n`;
+  md += `${data.meta.missing_information_summary}\n`;
+
+  return md;
 }
