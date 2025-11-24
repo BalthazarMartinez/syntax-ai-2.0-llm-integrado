@@ -336,23 +336,15 @@ export default function OpportunityDetail() {
     try {
       setLoadingDspText(true);
       
-      // Fetch the HTML content
+      // Fetch the Markdown content
       const response = await fetch(artifactUrl);
       if (!response.ok) {
         throw new Error("Failed to fetch DSP content");
       }
       
-      const htmlContent = await response.text();
+      const markdownContent = await response.text();
       
-      // Parse HTML and extract text preserving structure
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlContent, "text/html");
-      let textContent = doc.body.innerText || doc.body.textContent || "";
-      
-      // Normalize multiple line breaks to maximum 2
-      textContent = textContent.replace(/\n{3,}/g, "\n\n");
-      
-      setDspTextContent(textContent);
+      setDspTextContent(markdownContent);
       setDspTextPreviewOpen(true);
     } catch (error: any) {
       toast({
