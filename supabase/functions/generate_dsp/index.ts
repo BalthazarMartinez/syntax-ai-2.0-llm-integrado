@@ -109,9 +109,17 @@ async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promi
       throw new Error('LOVABLE_API_KEY no está configurada');
     }
 
+    // Check PDF size (limit to ~4MB in base64)
+    const maxSizeBytes = 3 * 1024 * 1024; // 3MB
+    if (pdfBytes.length > maxSizeBytes) {
+      console.warn(`PDF ${fileName} es demasiado grande (${pdfBytes.length} bytes), omitiendo extracción con AI`);
+      return '';
+    }
+
     // Convert PDF bytes to base64
+    console.log(`Convirtiendo ${fileName} a base64 (${pdfBytes.length} bytes)...`);
     const base64Pdf = btoa(String.fromCharCode(...pdfBytes));
-    const dataUrl = `data:application/pdf;base64,${base64Pdf}`;
+    console.log(`Base64 generado: ${base64Pdf.length} caracteres`);
 
     // Use Lovable AI to extract text from PDF
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -125,18 +133,11 @@ async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promi
         messages: [
           {
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Extract all text content from this PDF document. Return only the extracted text without any additional commentary or formatting.'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: dataUrl
-                }
-              }
-            ]
+            content: `Extract ALL text content from this PDF image. Return ONLY the extracted text, no commentary, no formatting, just the raw text content from the document.`
+          },
+          {
+            role: 'user', 
+            content: `data:application/pdf;base64,${base64Pdf}`
           }
         ],
       }),
@@ -144,8 +145,9 @@ async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promi
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Error en Lovable AI para ${fileName}:`, response.status, errorText);
-      throw new Error(`AI extraction failed: ${response.status}`);
+      console.error(`Error ${response.status} en Lovable AI para ${fileName}:`, errorText.substring(0, 500));
+      console.warn(`Omitiendo ${fileName} debido a error en AI`);
+      return '';
     }
 
     const aiResponse = await response.json();
@@ -156,10 +158,11 @@ async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promi
       return '';
     }
 
-    console.log(`Texto extraído de ${fileName}: ${extractedText.length} caracteres`);
+    console.log(`✓ Texto extraído de ${fileName}: ${extractedText.length} caracteres`);
     return extractedText;
   } catch (error) {
     console.error(`Error extracting text from ${fileName}:`, error);
+    console.warn(`Continuando sin ${fileName}...`);
     return '';
   }
 }
@@ -179,13 +182,16 @@ REGLAS CRÍTICAS:
 3. Si falta información para un campo, usar "N/A" como valor
 4. Mantener la estructura exacta del schema proporcionado
 5. Ser preciso y conciso en las respuestas
-6. Usar español en todos los campos de contenido`;
+6. Usar español en todos los campos de contenido
+7. IMPORTANTE: Los arrays deben contener OBJETOS, NO strings simples
+8. IMPORTANTE: Cada objeto en un array debe tener TODAS las propiedades requeridas`;
 
   const userPrompt = `Analiza el siguiente corpus de documentos y genera el Deal Strategy Plan en formato JSON:
 
 ${corpus}
 
-Genera el JSON siguiendo este schema EXACTO (devuelve SOLO el JSON, sin markdown):
+Genera el JSON siguiendo este schema EXACTO. IMPORTANTE: Los arrays marcados con [OBJECTS] deben contener objetos, NO strings:
+
 {
   "deal_strategy_plan": {
     "project_objective": {
@@ -206,21 +212,32 @@ Genera el JSON siguiendo este schema EXACTO (devuelve SOLO el JSON, sin markdown
     "bundles": {
       "purpose": "Identificar si aplica un bundle de aceleración.",
       "recommended_bundle": "",
-      "bundle_options_considered": [],
+      "bundle_options_considered": [
+        {
+          "bundle": "nombre del bundle",
+          "fit_reason": "razón por la que aplica"
+        }
+      ],
       "notes": ""
     },
     "preliminary_solution_approach": {
       "purpose": "Definir el abordaje inicial según claridad del proyecto y madurez tecnológica.",
       "recommended_approach": "",
       "approach_rationale": "",
-      "assumptions": [],
-      "open_questions": [],
+      "assumptions": ["string", "string"],
+      "open_questions": ["string", "string"],
       "notes": ""
     },
     "functionalities_description": {
       "purpose": "Listar funcionalidades iniciales esperadas, sin detalle técnico profundo.",
-      "expected_functionalities": [],
-      "out_of_scope": [],
+      "expected_functionalities": [
+        {
+          "name": "Nombre de la funcionalidad",
+          "description": "Descripción detallada",
+          "business_value": "Valor que aporta al negocio"
+        }
+      ],
+      "out_of_scope": ["string", "string"],
       "notes": ""
     },
     "technical": {
@@ -228,31 +245,53 @@ Genera el JSON siguiendo este schema EXACTO (devuelve SOLO el JSON, sin markdown
       "cloud_environment": "",
       "cloud_experience": "",
       "infrastructure_owner": "",
-      "required_data": [],
-      "data_gaps_or_risks": [],
+      "required_data": [
+        {
+          "data_type": "Tipo de dato",
+          "availability": "Disponibilidad actual",
+          "location": "Ubicación del dato"
+        }
+      ],
+      "data_gaps_or_risks": ["string", "string"],
       "notes": ""
     },
     "competitiveness_and_strategic_positioning": {
       "purpose": "Mapear el entorno competitivo y construir una narrativa diferencial.",
-      "competitors_or_alternatives": [],
-      "santex_advantages": [],
+      "competitors_or_alternatives": [
+        {
+          "name": "Nombre del competidor",
+          "status_or_role": "Estado o rol",
+          "strengths": "Fortalezas",
+          "weaknesses": "Debilidades"
+        }
+      ],
+      "santex_advantages": ["string", "string"],
       "differentiation_narrative": "",
       "notes": ""
     },
     "commercial_roadmap_next_steps": {
       "purpose": "Establecer hitos comerciales y criterios de salida.",
-      "next_steps": [],
-      "dependencies": [],
+      "next_steps": [
+        {
+          "step": "Descripción del paso",
+          "owner": "Responsable",
+          "expected_date_or_window": "Fecha esperada",
+          "exit_criteria": "Criterios de salida"
+        }
+      ],
+      "dependencies": ["string", "string"],
       "notes": ""
     },
     "meta": {
       "opportunity_id": "${opportunityId}",
       "generated_from_inputs": ${JSON.stringify(inputNames)},
-      "confidence_level": "",
+      "confidence_level": "high/medium/low",
       "missing_information_summary": ""
     }
   }
-}`;
+}
+
+RECUERDA: Devuelve SOLO el JSON, sin \`\`\`json ni otros wrappers de markdown.`;
 
   let attempt = 0;
   const maxAttempts = 2;
@@ -298,6 +337,8 @@ Genera el JSON siguiendo este schema EXACTO (devuelve SOLO el JSON, sin markdown
         throw new Error('No se recibió contenido del AI');
       }
 
+      console.log('Respuesta del AI (primeros 500 chars):', content.substring(0, 500));
+
       // Limpiar el contenido de markdown si existe
       let jsonString = content.trim();
       if (jsonString.startsWith('```json')) {
@@ -308,10 +349,11 @@ Genera el JSON siguiendo este schema EXACTO (devuelve SOLO el JSON, sin markdown
 
       // Intentar parsear el JSON
       const parsedJSON = JSON.parse(jsonString);
+      console.log('JSON parseado correctamente');
 
       // Validar contra el schema
       const validatedData = dspSchema.parse(parsedJSON);
-      console.log('JSON validado correctamente');
+      console.log('✓ JSON validado correctamente contra schema');
       
       return validatedData;
 
@@ -323,8 +365,39 @@ Genera el JSON siguiendo este schema EXACTO (devuelve SOLO el JSON, sin markdown
       }
 
       // Si es el primer intento, intentar de nuevo con prompt correctivo
-      if (attempt === 1) {
+      if (attempt === 1 && error instanceof Error) {
         console.log('Reintentando con prompt correctivo...');
+        
+        // Extraer información del error de validación
+        let errorDetails = error.message;
+        if (error.name === 'ZodError') {
+          errorDetails = `Error de validación de schema. Los siguientes campos tienen problemas:
+          
+${error.message}
+
+CORRECCIONES NECESARIAS:
+- "expected_functionalities" debe ser un array de OBJETOS con propiedades: name, description, business_value
+  Ejemplo: [{"name": "Gestión de usuarios", "description": "Sistema de registro y autenticación", "business_value": "Mejora la seguridad"}]
+  
+- "required_data" debe ser un array de OBJETOS con propiedades: data_type, availability, location
+  Ejemplo: [{"data_type": "Datos de clientes", "availability": "Disponible en CRM", "location": "Base de datos SQL"}]
+  
+- "next_steps" debe ser un array de OBJETOS con propiedades: step, owner, expected_date_or_window, exit_criteria
+  Ejemplo: [{"step": "Reunión con stakeholders", "owner": "PM", "expected_date_or_window": "Semana 1", "exit_criteria": "Aprobación de requisitos"}]
+
+NO uses strings simples en estos arrays. Usa OBJETOS con todas las propiedades requeridas.`;
+        }
+        
+        // Modificar el userPrompt para el segundo intento
+        const correctivePrompt = `${userPrompt}
+
+CORRECCIÓN REQUERIDA - El intento anterior tuvo estos errores:
+${errorDetails}
+
+Por favor, genera el JSON nuevamente asegurando que TODOS los arrays que deben contener objetos efectivamente los contengan con todas sus propiedades.`;
+        
+        // Reintentar con el prompt correctivo en el siguiente ciclo
+        continue;
       }
     }
   }
