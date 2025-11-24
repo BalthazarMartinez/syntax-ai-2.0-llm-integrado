@@ -102,10 +102,62 @@ const dspSchema = z.object({
 
 async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promise<string> {
   try {
-    // Import pdf-parse for Deno
-    const pdfParse = await import('https://esm.sh/pdf-parse@1.1.1');
-    const data = await pdfParse.default(pdfBytes);
-    return data.text || '';
+    console.log(`Extrayendo texto de ${fileName} usando Lovable AI...`);
+    
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY no está configurada');
+    }
+
+    // Convert PDF bytes to base64
+    const base64Pdf = btoa(String.fromCharCode(...pdfBytes));
+    const dataUrl = `data:application/pdf;base64,${base64Pdf}`;
+
+    // Use Lovable AI to extract text from PDF
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Extract all text content from this PDF document. Return only the extracted text without any additional commentary or formatting.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: dataUrl
+                }
+              }
+            ]
+          }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error en Lovable AI para ${fileName}:`, response.status, errorText);
+      throw new Error(`AI extraction failed: ${response.status}`);
+    }
+
+    const aiResponse = await response.json();
+    const extractedText = aiResponse.choices?.[0]?.message?.content;
+
+    if (!extractedText) {
+      console.warn(`No se pudo extraer texto de ${fileName}`);
+      return '';
+    }
+
+    console.log(`Texto extraído de ${fileName}: ${extractedText.length} caracteres`);
+    return extractedText;
   } catch (error) {
     console.error(`Error extracting text from ${fileName}:`, error);
     return '';
