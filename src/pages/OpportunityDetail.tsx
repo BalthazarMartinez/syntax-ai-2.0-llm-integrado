@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Upload, Download, Trash2, FileText, Edit, Loader2, Check, ChevronsUpDown, Eye, Sparkles, Printer } from "lucide-react";
+import { ArrowLeft, Upload, Download, Trash2, FileText, Edit, Loader2, Check, ChevronsUpDown, Eye, Sparkles, Printer, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Opportunity, InputFile, Artifact, Client, Responsible } from "@/types/database";
 import { uploadInputFile, getSignedUrl, deleteInputFile } from "@/lib/storage";
@@ -45,6 +45,9 @@ export default function OpportunityDetail() {
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFileName, setPreviewFileName] = useState("");
+  const [generatingDSP, setGeneratingDSP] = useState(false);
+  const [dspPreviewOpen, setDspPreviewOpen] = useState(false);
+  const [dspPreviewUrl, setDspPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -271,6 +274,59 @@ export default function OpportunityDetail() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleGenerateDSP = async () => {
+    if (!id) return;
+    
+    try {
+      setGeneratingDSP(true);
+      
+      toast({
+        title: "Generating DSP",
+        description: "This may take a few moments...",
+      });
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("You must be logged in to generate a DSP");
+      }
+
+      const response = await supabase.functions.invoke('generate_dsp', {
+        body: { opportunity_id: Number(id) },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to generate DSP");
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || "Failed to generate DSP");
+      }
+
+      toast({
+        title: "Success",
+        description: "Deal Strategy Plan generated successfully",
+      });
+
+      // Refresh artifacts list
+      await fetchOpportunityDetails();
+    } catch (error: any) {
+      console.error("DSP generation error:", error);
+      toast({
+        title: "Generation failed",
+        description: error.message || "An error occurred while generating the DSP",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingDSP(false);
+    }
+  };
+
+  const handlePreviewDSP = (artifactUrl: string) => {
+    setDspPreviewUrl(artifactUrl);
+    setDspPreviewOpen(true);
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -550,11 +606,27 @@ export default function OpportunityDetail() {
                 <CardTitle>Generated Artifacts (Output)</CardTitle>
                 <Button
                   size="sm"
+                  onClick={handleGenerateDSP}
+                  disabled={generatingDSP || inputs.length === 0}
                 >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate
+                  {generatingDSP ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate DSP
+                    </>
+                  )}
                 </Button>
               </div>
+              {inputs.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Upload at least one input document to generate a DSP
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               {artifacts.length === 0 ? (
@@ -573,27 +645,61 @@ export default function OpportunityDetail() {
                         <div>
                           <p className="font-medium text-sm">{artifact.artifact_name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {artifact.artifact_type || "Document"}
+                            {artifact.artifact_type || "Document"} {artifact.version && `v${artifact.version}`}
                           </p>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(artifact.artifact_url, "_blank")}
-                          title="View"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePrintArtifact(artifact.artifact_url)}
-                          title="Download as PDF"
-                        >
-                          <Printer className="h-4 w-4" />
-                        </Button>
+                        {artifact.artifact_type === "DSP" ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePreviewDSP(artifact.artifact_url)}
+                              title="Preview DSP"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Preview
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(artifact.artifact_url, "_blank")}
+                              title="Open Deal Strategy Plan"
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Open
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePrintArtifact(artifact.artifact_url)}
+                              title="Print to PDF"
+                            >
+                              <Printer className="h-4 w-4 mr-2" />
+                              Print
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(artifact.artifact_url, "_blank")}
+                              title="View"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrintArtifact(artifact.artifact_url)}
+                              title="Print"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -848,6 +954,52 @@ export default function OpportunityDetail() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DSP Preview Dialog */}
+      <Dialog open={dspPreviewOpen} onOpenChange={setDspPreviewOpen}>
+        <DialogContent className="max-w-7xl h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Deal Strategy Plan Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden rounded-lg border">
+            {dspPreviewUrl && (
+              <iframe
+                src={dspPreviewUrl}
+                className="w-full h-[calc(90vh-120px)]"
+                title="DSP Preview"
+              />
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDspPreviewOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                if (dspPreviewUrl) {
+                  window.open(dspPreviewUrl, '_blank');
+                }
+              }}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open in New Tab
+            </Button>
+            <Button
+              onClick={() => {
+                if (dspPreviewUrl) {
+                  handlePrintArtifact(dspPreviewUrl);
+                }
+              }}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Print to PDF
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
