@@ -1067,29 +1067,6 @@ function generateHTMLFromDSP(dsp: any, opportunityName: string): string {
 </html>`;
 }
 
-async function convertHTMLToPDF(html: string): Promise<Uint8Array> {
-  // Using jsPDF for PDF generation in Deno
-  const { jsPDF } = await import('https://esm.sh/jspdf@2.5.1');
-  const doc = new jsPDF({
-    format: 'a4',
-    unit: 'mm',
-  });
-
-  // Convert HTML to PDF (simplified - for production use puppeteer or similar)
-  // This is a basic implementation - consider using html2pdf or puppeteer for better results
-  doc.html(html, {
-    callback: function (_doc: any) {
-      // PDF generation complete
-    },
-    x: 10,
-    y: 10,
-    width: 190,
-  });
-
-  // Get PDF as Uint8Array
-  const pdfOutput = doc.output('arraybuffer');
-  return new Uint8Array(pdfOutput);
-}
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -1261,11 +1238,7 @@ Deno.serve(async (req) => {
     console.log('Generando HTML...');
     const html = generateHTMLFromDSP(dspData, opportunity.opportunity_name);
 
-    // 8. Convertir HTML a PDF
-    console.log('Convirtiendo HTML a PDF...');
-    const pdfBytes = await convertHTMLToPDF(html);
-
-    // 9. Crear bucket de artifacts si no existe
+    // 8. Crear bucket de artifacts si no existe
     const { data: buckets } = await supabase.storage.listBuckets();
     const artifactsBucketExists = buckets?.some(b => b.name === 'artifacts-files');
     
@@ -1281,23 +1254,23 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 10. Guardar PDF en storage
+    // 9. Guardar HTML en storage
     const timestamp = new Date().getTime();
-    const artifactFileName = `DSP_${opportunity_id}_${timestamp}.pdf`;
+    const artifactFileName = `DSP_${opportunity_id}_${timestamp}.html`;
     const storagePath = `${opportunity_id}/${artifactFileName}`;
 
-    console.log('Guardando PDF en storage:', storagePath);
+    console.log('Guardando HTML en storage:', storagePath);
     const { error: uploadError } = await supabase.storage
       .from('artifacts-files')
-      .upload(storagePath, pdfBytes, {
-        contentType: 'application/pdf',
+      .upload(storagePath, html, {
+        contentType: 'text/html',
         upsert: false,
       });
 
     if (uploadError) {
-      console.error('Error subiendo PDF:', uploadError);
+      console.error('Error subiendo HTML:', uploadError);
       return new Response(
-        JSON.stringify({ error: 'Error al guardar el PDF generado' }),
+        JSON.stringify({ error: 'Error al guardar el HTML generado' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -1312,7 +1285,7 @@ Deno.serve(async (req) => {
 
     const artifactUrl = urlData?.signedUrl || '';
 
-    // 11. Insertar registro en artifacts
+    // 10. Insertar registro en artifacts
     console.log('Insertando registro en tabla artifacts...');
     const { data: artifact, error: insertError } = await supabase
       .from('artifacts')
@@ -1341,7 +1314,7 @@ Deno.serve(async (req) => {
 
     console.log('=== DSP generado exitosamente ===');
 
-    // 12. Retornar resultado
+    // 11. Retornar resultado
     return new Response(
       JSON.stringify({ 
         success: true,
