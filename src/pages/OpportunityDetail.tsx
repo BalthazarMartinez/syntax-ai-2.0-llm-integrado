@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/Header";
 
@@ -749,85 +748,59 @@ export default function OpportunityDetail() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <TooltipProvider>
-                          {artifact.artifact_type === "DSP" ? (
-                            <>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handlePreviewDSPText(artifact.artifact_url)}
-                                      disabled={!artifact.artifact_url || loadingDspText}
-                                      title="Preview as text"
-                                    >
-                                      {loadingDspText ? (
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                      ) : (
-                                        <Eye className="h-4 w-4 mr-2" />
-                                      )}
-                                      Preview
-                                    </Button>
-                                  </span>
-                                </TooltipTrigger>
-                                {!artifact.artifact_url && (
-                                  <TooltipContent>
-                                    <p>Artifact not available</p>
-                                  </TooltipContent>
-                                )}
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => window.open(artifact.artifact_url, "_blank")}
-                                      disabled={!artifact.artifact_url}
-                                      title="Download HTML"
-                                    >
-                                      <Download className="h-4 w-4 mr-2" />
-                                      Download
-                                    </Button>
-                                  </span>
-                                </TooltipTrigger>
-                                {!artifact.artifact_url && (
-                                  <TooltipContent>
-                                    <p>Artifact not available</p>
-                                  </TooltipContent>
-                                )}
-                              </Tooltip>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteArtifact(artifact.artifact_id, artifact.artifact_url)}
-                                title="Delete DSP"
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => window.open(artifact.artifact_url, "_blank")}
-                                title="View"
-                              >
+                        {artifact.artifact_type === "DSP" ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePreviewDSPText(artifact.artifact_url)}
+                              disabled={!artifact.artifact_url || loadingDspText}
+                              title="Preview DSP"
+                            >
+                              {loadingDspText ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
                                 <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handlePrintArtifact(artifact.artifact_url)}
-                                title="Print"
-                              >
-                                <Printer className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                        </TooltipProvider>
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(artifact.artifact_url, "_blank")}
+                              disabled={!artifact.artifact_url}
+                              title="Download HTML"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteArtifact(artifact.artifact_id, artifact.artifact_url)}
+                              title="Delete DSP"
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(artifact.artifact_url, "_blank")}
+                              title="View"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePrintArtifact(artifact.artifact_url)}
+                              title="Print"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
