@@ -543,6 +543,65 @@ export default function OpportunityDetail() {
     }
   };
 
+  const handleDeleteOpportunity = async () => {
+    if (!confirm("Are you sure you want to delete this opportunity? All inputs and artifacts will be permanently deleted. This action cannot be undone.")) return;
+
+    try {
+      // Delete all artifacts and their files from storage
+      for (const artifact of artifacts) {
+        if (artifact.artifact_url.includes("/storage/v1/object/")) {
+          const urlParts = artifact.artifact_url.split("/storage/v1/object/");
+          if (urlParts[1]) {
+            const pathWithBucket = urlParts[1].split("?")[0];
+            const storagePath = pathWithBucket.substring(pathWithBucket.indexOf("/") + 1);
+            
+            await supabase.storage
+              .from("artifacts-files")
+              .remove([storagePath]);
+          }
+        }
+      }
+
+      // Delete all artifacts from database
+      await supabase
+        .from("artifacts")
+        .delete()
+        .eq("opportunity_id", Number(id));
+
+      // Delete all inputs and their files from storage
+      for (const input of inputs) {
+        await deleteInputFile(input.storage_path);
+      }
+
+      // Delete all inputs from database
+      await supabase
+        .from("inputs")
+        .delete()
+        .eq("opportunity_id", Number(id));
+
+      // Delete the opportunity
+      const { error: oppError } = await supabase
+        .from("opportunities")
+        .delete()
+        .eq("opportunity_id", Number(id));
+
+      if (oppError) throw oppError;
+
+      toast({
+        title: "Success",
+        description: "Opportunity deleted successfully",
+      });
+
+      navigate("/opportunities");
+    } catch (error: any) {
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -592,14 +651,24 @@ export default function OpportunityDetail() {
                   )}
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditDialogOpen(true)}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditDialogOpen(true)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteOpportunity}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
             </div>
           </CardHeader>
         </Card>
