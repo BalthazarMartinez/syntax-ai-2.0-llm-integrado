@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Upload, Download, Trash2, FileText, Edit, Loader2, Check, ChevronsUpDown, Eye, Sparkles } from "lucide-react";
+import { ArrowLeft, Upload, Download, Trash2, FileText, Edit, Loader2, Check, ChevronsUpDown, Eye, Sparkles, Printer } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Opportunity, InputFile, Artifact, Client, Responsible } from "@/types/database";
 import { uploadInputFile, getSignedUrl, deleteInputFile } from "@/lib/storage";
@@ -245,6 +245,28 @@ export default function OpportunityDetail() {
     } catch (error: any) {
       toast({
         title: "Download failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePrintArtifact = async (artifactUrl: string) => {
+    try {
+      // Open the HTML in a new window and trigger print
+      const printWindow = window.open(artifactUrl, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          setTimeout(() => {
+            printWindow.print();
+          }, 500);
+        };
+      } else {
+        throw new Error("Failed to open print window");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Print failed",
         description: error.message,
         variant: "destructive",
       });
@@ -555,13 +577,24 @@ export default function OpportunityDetail() {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(artifact.artifact_url, "_blank")}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(artifact.artifact_url, "_blank")}
+                          title="View"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePrintArtifact(artifact.artifact_url)}
+                          title="Download as PDF"
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
