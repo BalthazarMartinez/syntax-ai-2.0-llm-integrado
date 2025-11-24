@@ -88,8 +88,14 @@ export default {
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		},
 		fontFamily: {
-  			sans: [
+  			heading: [
   				'Sansation',
+  				'ui-sans-serif',
+  				'system-ui',
+  				'sans-serif'
+  			],
+  			sans: [
+  				'Inter Tight',
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif',
