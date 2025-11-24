@@ -20,7 +20,7 @@ export function Header() {
           className="flex items-center gap-2 cursor-pointer" 
           onClick={() => navigate('/')}
         >
-          <span className="text-2xl font-bold text-foreground">
+          <span className="text-2xl font-bold text-foreground font-brand">
             Syntax.AI
           </span>
         </div>
