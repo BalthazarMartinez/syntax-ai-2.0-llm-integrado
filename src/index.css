@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Crimson+Pro&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors inspired by the Syntax.AI logo */
+    --background: 0 0% 100%;
+    --foreground: 212 53% 24%;
+
+    /* Primary: Bright cyan/turquoise from logo */
+    --primary: 189 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 189 100% 75%;
+
+    /* Secondary: Deep navy from logo */
+    --secondary: 212 53% 24%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Accent: Medium teal from logo */
+    --accent: 188 100% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Muted surfaces */
+    --muted: 189 20% 96%;
+    --muted-foreground: 212 20% 45%;
+
+    /* Card surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 212 53% 24%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 212 53% 24%;
+
+    /* Destructive */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs */
+    --border: 189 20% 88%;
+    --input: 189 20% 88%;
+    --ring: 189 100% 50%;
+
+    /* Radius */
+    --radius: 2rem;
+
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(189 100% 50%), hsl(188 100% 42%));
+    --gradient-hero: linear-gradient(135deg, hsl(189 100% 50% / 0.1), hsl(188 100% 42% / 0.05));
+
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsl(189 100% 50% / 0.2);
+    --shadow-card: 0 4px 20px hsl(189 20% 50% / 0.08);
+
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-sans: Figtree, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    --font-serif: "Crimson Pro", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  }
+
+  .dark {
+    --background: 212 53% 12%;
+    --foreground: 189 50% 95%;
+
+    --primary: 189 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 189 100% 60%;
+
+    --secondary: 212 40% 20%;
+    --secondary-foreground: 189 50% 95%;
+
+    --accent: 188 100% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 212 30% 18%;
+    --muted-foreground: 189 20% 65%;
+
+    --card: 212 40% 16%;
+    --card-foreground: 189 50% 95%;
+
+    --popover: 212 40% 16%;
+    --popover-foreground: 189 50% 95%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 212 30% 25%;
+    --input: 212 30% 25%;
+    --ring: 189 100% 50%;
+
+    --shadow-glow: 0 0 40px hsl(189 100% 50% / 0.3);
+    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.4);
+    --font-sans: Figtree, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    --font-serif: "Crimson Pro", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+    --radius: 2rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
