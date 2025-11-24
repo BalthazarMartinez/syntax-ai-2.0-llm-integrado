@@ -1254,10 +1254,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 9. Guardar HTML en storage
-    const timestamp = new Date().getTime();
-    const artifactFileName = `DSP_${opportunity_id}_${timestamp}.html`;
-    const storagePath = `${opportunity_id}/${artifactFileName}`;
+    // 9. Calcular la versión (contar DSPs existentes + 1)
+    const { data: existingDsps, error: countError } = await supabase
+      .from('artifacts')
+      .select('artifact_id', { count: 'exact' })
+      .eq('opportunity_id', opportunity_id)
+      .eq('artifact_type', 'DSP');
+    
+    const version = (existingDsps?.length || 0) + 1;
+    console.log(`Generando DSP versión ${version}`);
+
+    // 10. Guardar HTML en storage con formato: opportunities/{opportunity_id}/dsp-v{version}.html
+    const storagePath = `opportunities/${opportunity_id}/dsp-v${version}.html`;
 
     console.log('Guardando HTML en storage:', storagePath);
     const { error: uploadError } = await supabase.storage
@@ -1278,14 +1286,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get public URL (or signed URL if bucket is private)
+    // Obtener URL signed (1 año de expiración)
     const { data: urlData } = await supabase.storage
       .from('artifacts-files')
-      .createSignedUrl(storagePath, 31536000); // 1 year expiration
+      .createSignedUrl(storagePath, 31536000);
 
     const artifactUrl = urlData?.signedUrl || '';
 
-    // 10. Insertar registro en artifacts
+    // 11. Insertar registro en artifacts
     console.log('Insertando registro en tabla artifacts...');
     const { data: artifact, error: insertError } = await supabase
       .from('artifacts')
@@ -1295,7 +1303,7 @@ Deno.serve(async (req) => {
         artifact_type: 'DSP',
         artifact_url: artifactUrl,
         generated_by: user.email,
-        version: 1,
+        version,
         status: 'generated',
       })
       .select()
@@ -1314,13 +1322,11 @@ Deno.serve(async (req) => {
 
     console.log('=== DSP generado exitosamente ===');
 
-    // 11. Retornar resultado
+    // 12. Retornar resultado
     return new Response(
       JSON.stringify({ 
         success: true,
-        artifact_url: artifactUrl,
-        artifact_id: artifact.artifact_id,
-        message: 'Deal Strategy Plan generado exitosamente'
+        artifact_url: artifactUrl
       }),
       { 
         status: 200, 
