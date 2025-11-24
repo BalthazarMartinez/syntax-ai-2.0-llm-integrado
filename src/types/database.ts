@@ -41,4 +41,6 @@ export type Artifact = {
   artifact_type?: string | null;
   generated_at: string;
   generated_by?: string | null;
+  version?: number | null;
+  status?: string | null;
 };
