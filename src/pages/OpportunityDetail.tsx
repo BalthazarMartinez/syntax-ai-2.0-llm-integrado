@@ -345,10 +345,13 @@ export default function OpportunityDetail() {
       
       const htmlContent = await response.text();
       
-      // Parse HTML and extract text
+      // Parse HTML and extract text preserving structure
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlContent, "text/html");
-      const textContent = doc.body.innerText || doc.body.textContent || "";
+      let textContent = doc.body.innerText || doc.body.textContent || "";
+      
+      // Normalize multiple line breaks to maximum 2
+      textContent = textContent.replace(/\n{3,}/g, "\n\n");
       
       setDspTextContent(textContent);
       setDspTextPreviewOpen(true);
