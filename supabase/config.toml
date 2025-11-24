@@ -1,1 +1,4 @@
 project_id = "evddgrmkrqiquiynmipb"
+
+[functions.generate_dsp]
+verify_jwt = true
