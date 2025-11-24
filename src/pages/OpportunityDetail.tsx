@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Upload, Download, Trash2, FileText, Edit, Loader2, Check, ChevronsUpDown, Eye, Sparkles, Printer, ExternalLink } from "lucide-react";
+import { ArrowLeft, Upload, Download, Trash2, FileText, Edit, Loader2, Check, ChevronsUpDown, Eye, Sparkles, Printer, ExternalLink, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Opportunity, InputFile, Artifact, Client, Responsible } from "@/types/database";
 import { uploadInputFile, getSignedUrl, deleteInputFile } from "@/lib/storage";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/Header";
 
@@ -48,6 +49,9 @@ export default function OpportunityDetail() {
   const [generatingDSP, setGeneratingDSP] = useState(false);
   const [dspPreviewOpen, setDspPreviewOpen] = useState(false);
   const [dspPreviewUrl, setDspPreviewUrl] = useState<string | null>(null);
+  const [dspTextPreviewOpen, setDspTextPreviewOpen] = useState(false);
+  const [dspTextContent, setDspTextContent] = useState("");
+  const [loadingDspText, setLoadingDspText] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -327,6 +331,52 @@ export default function OpportunityDetail() {
   const handlePreviewDSP = (artifactUrl: string) => {
     setDspPreviewUrl(artifactUrl);
     setDspPreviewOpen(true);
+  };
+
+  const handlePreviewDSPText = async (artifactUrl: string) => {
+    try {
+      setLoadingDspText(true);
+      
+      // Fetch the HTML content
+      const response = await fetch(artifactUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch DSP content");
+      }
+      
+      const htmlContent = await response.text();
+      
+      // Parse HTML and extract text
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, "text/html");
+      const textContent = doc.body.innerText || doc.body.textContent || "";
+      
+      setDspTextContent(textContent);
+      setDspTextPreviewOpen(true);
+    } catch (error: any) {
+      toast({
+        title: "Preview failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingDspText(false);
+    }
+  };
+
+  const handleCopyDSPText = async () => {
+    try {
+      await navigator.clipboard.writeText(dspTextContent);
+      toast({
+        title: "Copied",
+        description: "DSP text copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -650,56 +700,77 @@ export default function OpportunityDetail() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {artifact.artifact_type === "DSP" ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePreviewDSP(artifact.artifact_url)}
-                              title="Preview DSP"
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              Preview
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(artifact.artifact_url, "_blank")}
-                              title="Open Deal Strategy Plan"
-                            >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Open
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePrintArtifact(artifact.artifact_url)}
-                              title="Print to PDF"
-                            >
-                              <Printer className="h-4 w-4 mr-2" />
-                              Print
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => window.open(artifact.artifact_url, "_blank")}
-                              title="View"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handlePrintArtifact(artifact.artifact_url)}
-                              title="Print"
-                            >
-                              <Printer className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
+                        <TooltipProvider>
+                          {artifact.artifact_type === "DSP" ? (
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handlePreviewDSPText(artifact.artifact_url)}
+                                      disabled={!artifact.artifact_url || loadingDspText}
+                                      title="Preview as text"
+                                    >
+                                      {loadingDspText ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      ) : (
+                                        <Eye className="h-4 w-4 mr-2" />
+                                      )}
+                                      Preview
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                {!artifact.artifact_url && (
+                                  <TooltipContent>
+                                    <p>Artifact not available</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => window.open(artifact.artifact_url, "_blank")}
+                                      disabled={!artifact.artifact_url}
+                                      title="Download HTML"
+                                    >
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Download
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                {!artifact.artifact_url && (
+                                  <TooltipContent>
+                                    <p>Artifact not available</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.open(artifact.artifact_url, "_blank")}
+                                title="View"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handlePrintArtifact(artifact.artifact_url)}
+                                title="Print"
+                              >
+                                <Printer className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </TooltipProvider>
                       </div>
                     </div>
                   ))}
@@ -998,6 +1069,34 @@ export default function OpportunityDetail() {
             >
               <Printer className="h-4 w-4 mr-2" />
               Print to PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* DSP Text Preview Dialog */}
+      <Dialog open={dspTextPreviewOpen} onOpenChange={setDspTextPreviewOpen}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Deal Strategy Plan Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto rounded-lg border bg-muted/30 p-4">
+            <pre className="whitespace-pre-wrap text-sm font-mono">
+              {dspTextContent}
+            </pre>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDspTextPreviewOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={handleCopyDSPText}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copy
             </Button>
           </div>
         </DialogContent>
