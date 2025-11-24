@@ -23,6 +23,8 @@ export type Database = {
           generated_at: string | null
           generated_by: string | null
           opportunity_id: number
+          status: string | null
+          version: number | null
         }
         Insert: {
           artifact_id?: number
@@ -32,6 +34,8 @@ export type Database = {
           generated_at?: string | null
           generated_by?: string | null
           opportunity_id: number
+          status?: string | null
+          version?: number | null
         }
         Update: {
           artifact_id?: number
@@ -41,6 +45,8 @@ export type Database = {
           generated_at?: string | null
           generated_by?: string | null
           opportunity_id?: number
+          status?: string | null
+          version?: number | null
         }
         Relationships: [
           {
