@@ -821,7 +821,7 @@ Deno.serve(async (req) => {
       .from('artifacts-files')
       .upload(storagePath, markdown, {
         contentType: 'text/markdown',
-        upsert: false,
+        upsert: true,
       });
 
     if (uploadError) {
