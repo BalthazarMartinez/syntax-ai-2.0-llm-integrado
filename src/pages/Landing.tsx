@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import DataTransformAnimation from '@/components/DataTransformAnimation';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (user) {
@@ -21,13 +24,18 @@ const Landing = () => {
         <DataTransformAnimation />
       </div>
 
+      {/* Language Selector - Top Right */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSelector />
+      </div>
+
       {/* Top Content - Title and Description */}
       <div className="relative z-10 pt-8 pb-4 px-4 text-center">
         <h1 className="text-5xl md:text-6xl font-bold text-foreground font-brand mb-4">
-          SYNTAX.AI
+          {t('landing.title')}
         </h1>
         <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          Syntax.AI centralizes Santex Lab opportunities and enables the agile generation of commercial artifacts using Generative AI
+          {t('landing.description')}
         </p>
       </div>
 
@@ -41,7 +49,7 @@ const Landing = () => {
           onClick={() => navigate('/auth')}
           className="text-lg px-8 py-3"
         >
-          Log in
+          {t('landing.login')}
         </Button>
       </div>
     </div>
