@@ -2,19 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import logo from '@/assets/logo.png';
-
-const authSchema = z.object({
-  email: z.string().email('Invalid email address').max(255),
-  password: z.string().min(6, 'Password must be at least 6 characters').max(100),
-  fullName: z.string().min(2, 'Name must be at least 2 characters').max(100).optional(),
-});
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -24,6 +20,13 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
+
+  const authSchema = z.object({
+    email: z.string().email(t('auth.invalidEmail')).max(255),
+    password: z.string().min(6, t('auth.passwordMinLength')).max(100),
+    fullName: z.string().min(2, t('auth.nameMinLength')).max(100).optional(),
+  });
 
   useEffect(() => {
     if (user) {
@@ -49,7 +52,7 @@ export default function Auth() {
         });
 
         if (error) throw error;
-        toast.success('Logged in successfully!');
+        toast.success(t('auth.loginSuccess'));
         navigate('/');
       } else {
         const redirectUrl = `${window.location.origin}/`;
@@ -66,7 +69,7 @@ export default function Auth() {
         });
 
         if (error) throw error;
-        toast.success('Account created successfully!');
+        toast.success(t('auth.signupSuccess'));
         navigate('/');
       }
     } catch (error: any) {
@@ -75,9 +78,9 @@ export default function Auth() {
           toast.error(err.message);
         });
       } else if (error.message?.includes('already registered')) {
-        toast.error('This email is already registered. Please login instead.');
+        toast.error(t('auth.emailExists'));
       } else {
-        toast.error(error.message || 'An error occurred');
+        toast.error(error.message || t('auth.errorOccurred'));
       }
     } finally {
       setLoading(false);
@@ -86,6 +89,9 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-hero px-4">
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSelector />
+      </div>
       <Card className="w-full max-w-md shadow-card">
         <CardHeader className="space-y-4 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center">
@@ -93,12 +99,12 @@ export default function Auth() {
           </div>
           <div>
             <CardTitle className="text-2xl">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
+              {isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}
             </CardTitle>
             <CardDescription>
               {isLogin
-                ? 'Sign in to access your opportunities'
-                : 'Get started with Syntax.AI'}
+                ? t('auth.signInDescription')
+                : t('auth.getStarted')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -106,11 +112,11 @@ export default function Auth() {
           <form onSubmit={handleAuth} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t('auth.fullName')}</Label>
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder={t('auth.fullNamePlaceholder')}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required={!isLogin}
@@ -120,11 +126,11 @@ export default function Auth() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -133,11 +139,11 @@ export default function Auth() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -150,7 +156,7 @@ export default function Auth() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
+              {loading ? t('auth.loading') : isLogin ? t('auth.signIn') : t('auth.signUp')}
             </Button>
           </form>
 
@@ -164,8 +170,8 @@ export default function Auth() {
               className="text-primary hover:underline"
             >
               {isLogin
-                ? "Don't have an account? Sign up"
-                : 'Already have an account? Sign in'}
+                ? t('auth.noAccount')
+                : t('auth.hasAccount')}
             </button>
           </div>
         </CardContent>
