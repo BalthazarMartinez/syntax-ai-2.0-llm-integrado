@@ -79,7 +79,7 @@ const DataTransformAnimation = () => {
 
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      <div className="relative w-full h-full max-w-2xl max-h-[600px]">
+      <div className="relative w-full h-full flex items-center justify-center">
         
         {/* Phase 1: Input Elements - Data Collection */}
         <AnimatePresence>
@@ -290,14 +290,14 @@ const DataTransformAnimation = () => {
           {phase === 'output' && (
             <motion.div
               key={`output-${iteration}`}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-72 rounded-xl border-2 p-5 flex flex-col gap-3 shadow-xl"
+              className="w-80 h-96 rounded-xl border-2 p-6 flex flex-col gap-3 shadow-xl"
               style={{
                 borderColor: 'hsl(var(--primary))',
                 background: 'hsl(var(--background))',
                 boxShadow: '0 10px 40px hsl(var(--primary) / 0.2)',
               }}
               initial={{ 
-                scale: 0.4,
+                scale: 0.5,
                 opacity: 0,
                 rotateY: -90,
               }}
@@ -307,7 +307,7 @@ const DataTransformAnimation = () => {
                 rotateY: 0,
               }}
               exit={{ 
-                scale: 0.4,
+                scale: 0.5,
                 opacity: 0,
                 rotateY: 90,
               }}
@@ -318,7 +318,7 @@ const DataTransformAnimation = () => {
             >
               {/* Typed Title - Deal Strategy Plan */}
               <motion.div
-                className="w-full min-h-10 flex items-center font-semibold text-base"
+                className="w-full min-h-12 flex items-center justify-center font-semibold text-lg text-center"
                 style={{ 
                   color: 'hsl(45, 90%, 55%)',
                   textShadow: '0 0 20px hsl(45, 90%, 60% / 0.3)',
