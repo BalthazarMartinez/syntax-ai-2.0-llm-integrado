@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import logo from '@/assets/logo.png';
 
 export function Header() {
@@ -10,7 +11,8 @@ export function Header() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    toast.success('Cierre de sesión exitoso');
+    navigate('/');
   };
 
   return (
