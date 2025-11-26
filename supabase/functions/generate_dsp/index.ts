@@ -10,96 +10,6 @@ const requestSchema = z.object({
   opportunity_id: z.number().int().positive(),
 });
 
-// Schema for DSP validation
-const dspSchema = z.object({
-  deal_strategy_plan: z.object({
-    project_objective: z.object({
-      purpose: z.string(),
-      strategic_objective: z.string(),
-      success_criteria: z.string(),
-      notes: z.string(),
-    }),
-    use_case: z.object({
-      purpose: z.string(),
-      problem_to_solve: z.string(),
-      current_consequences: z.string(),
-      business_impact: z.string(),
-      priority_level: z.string(),
-      priority_rationale: z.string(),
-      notes: z.string(),
-    }),
-    bundles: z.object({
-      purpose: z.string(),
-      recommended_bundle: z.string(),
-      bundle_options_considered: z.array(z.object({
-        bundle: z.string(),
-        fit_reason: z.string(),
-      })),
-      notes: z.string(),
-    }),
-    preliminary_solution_approach: z.object({
-      purpose: z.string(),
-      recommended_approach: z.string(),
-      approach_rationale: z.string(),
-      assumptions: z.array(z.string()),
-      open_questions: z.array(z.string()),
-      notes: z.string(),
-    }),
-    functionalities_description: z.object({
-      purpose: z.string(),
-      expected_functionalities: z.array(z.object({
-        name: z.string(),
-        description: z.string(),
-        business_value: z.string(),
-      })),
-      out_of_scope: z.array(z.string()),
-      notes: z.string(),
-    }),
-    technical: z.object({
-      purpose: z.string(),
-      cloud_environment: z.string(),
-      cloud_experience: z.string(),
-      infrastructure_owner: z.string(),
-      required_data: z.array(z.object({
-        data_type: z.string(),
-        availability: z.string(),
-        location: z.string(),
-      })),
-      data_gaps_or_risks: z.array(z.string()),
-      notes: z.string(),
-    }),
-    competitiveness_and_strategic_positioning: z.object({
-      purpose: z.string(),
-      competitors_or_alternatives: z.array(z.object({
-        name: z.string(),
-        status_or_role: z.string(),
-        strengths: z.string(),
-        weaknesses: z.string(),
-      })),
-      santex_advantages: z.array(z.string()),
-      differentiation_narrative: z.string(),
-      notes: z.string(),
-    }),
-    commercial_roadmap_next_steps: z.object({
-      purpose: z.string(),
-      next_steps: z.array(z.object({
-        step: z.string(),
-        owner: z.string(),
-        expected_date_or_window: z.string(),
-        exit_criteria: z.string(),
-      })),
-      dependencies: z.array(z.string()),
-      notes: z.string(),
-    }),
-    meta: z.object({
-      opportunity_id: z.string(),
-      generated_from_inputs: z.array(z.string()),
-      confidence_level: z.string(),
-      missing_information_summary: z.string(),
-    }),
-  }),
-});
-
 async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promise<string> {
   try {
     console.log(`Extrayendo texto de ${fileName} usando Lovable AI...`);
@@ -167,455 +77,202 @@ async function extractTextFromPDF(pdfBytes: Uint8Array, fileName: string): Promi
   }
 }
 
-async function generateDSPWithAI(corpus: string, opportunityId: number, inputNames: string[]): Promise<any> {
+async function generateDSPWithAI(corpus: string, opportunityName: string, clientName: string): Promise<string> {
   const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
   if (!LOVABLE_API_KEY) {
     throw new Error('LOVABLE_API_KEY no está configurada');
   }
 
-  const systemPrompt = `Eres un experto en generación de Deal Strategy Plans (DSP) para proyectos tecnológicos.
-Tu tarea es analizar el corpus de documentos proporcionado y generar un JSON estructurado siguiendo el schema exacto del DSP.
+  const systemPrompt = `# SYSTEM / ROLE INSTRUCTIONS
 
-REGLAS CRÍTICAS:
-1. SOLO devolver JSON válido, sin markdown, sin comentarios, sin texto adicional
-2. NO inventar datos que no estén en el corpus
-3. Si falta información para un campo, usar "N/A" como valor
-4. Mantener la estructura exacta del schema proporcionado
-5. Ser preciso y conciso en las respuestas
-6. Usar español en todos los campos de contenido
-7. IMPORTANTE: Los arrays deben contener OBJETOS, NO strings simples
-8. IMPORTANTE: Cada objeto en un array debe tener TODAS las propiedades requeridas`;
+You are a Senior Strategic Consultant and Solutions Architect at Santex.
 
-  const userPrompt = `Analiza el siguiente corpus de documentos y genera el Deal Strategy Plan en formato JSON:
+Your job is to read and analyze only the provided PDF corpus (minutes, use cases, research, notes, etc.) and then write a formal, strategic, and technical document called a Deal Strategy Plan (DSP).
+
+Audience: internal Santex Commercial + Technical teams and the client's executive/technical stakeholders.
+
+Tone: professional, consultative, persuasive, solution‑oriented, and technically solid. Do not sound like a generic summary bot.
+
+# Critical Rules
+
+Output format: return only a Markdown document following the DSP structure below. No JSON. No code fences. No extra commentary.
+
+Source grounding: base your content exclusively on the PDF corpus. Do not invent client-specific facts.
+
+Missing information: if a section or bullet cannot be answered from the corpus, write exactly: "(no responde)".
+
+Cross‑reading & contradictions: if documents conflict, prefer the most recent document when a date is available. If recency cannot be determined, note the conflict briefly and still provide the best grounded answer.
+
+Consultative synthesis: do not just restate text. Infer a reasonable strategic framing using general best practices only when it does not add new facts. Make clear, grounded assumptions.
+
+Precision: be concise, specific, and avoid fluff. Prefer business and engineering language.
+
+No hallucinated numbers: never fabricate metrics, dates, costs, timelines, tools, clouds, or vendors.
+
+Language: the entire final DSP must be written in Spanish. You may keep specific technical terms in English when they are standard in the industry (e.g., MVP, Discovery, roadmap, cloud, data lake, churn), but all sentences and narrative must be Spanish.
+
+# REQUIRED OUTPUT STRUCTURE (Markdown)
+
+Deal Strategy Plan - [Opportunity Name] - [Client Name]
+
+1. Objetivo del Proyecto
+
+Redacta un párrafo conciso que defina el propósito estratégico.
+
+Objetivo Estratégico: ¿Qué busca lograr el cliente a nivel negocio según los documentos? (Ej: Aumentar revenue, reducir churn, modernizar legacy).
+
+Visión de Éxito: ¿Cómo se ve el proyecto una vez finalizado exitosamente?
+
+2. Use Case (Caso de Uso)
+
+Describe el problema y su impacto. Sé directo.
+
+Problemática Actual: ¿Qué dolor tiene el cliente hoy?
+
+Impacto/Consecuencias: ¿Qué pasa si no se resuelve? (Pérdida de dinero, ineficiencia operativa, riesgo de seguridad).
+
+Prioridad: Nivel de urgencia percibido (Alta/Media/Baja) + justificación basada en el corpus.
+
+3. Bundles Sugeridos
+
+Analiza la madurez de la idea y recomienda el vehículo comercial adecuado.
+
+Bundle Seleccionado: (Discovery / Proof of Concept (PoC) / MVP / Staff Augmentation).
+
+Justificación: ¿Por qué este bundle encaja con la madurez y claridad del alcance observada en el corpus?
+
+4. Preliminary Solution Approach (High‑Level)
+
+Define el "Cómo" vamos a abordarlo metodológicamente.
+
+Enfoque: estrategia de ejecución sugerida.
+
+Madurez Tecnológica: evaluación breve de la preparación tecnológica del cliente.
+
+5. Description of Functionalities
+
+Lista preliminar de alcance extraída de los requerimientos.
+
+Core Features: 3–5 funcionalidades críticas para el MVP/solución.
+
+Nice‑to‑haves: funcionalidades secundarias mencionadas.
+
+(Nota: mantener alto nivel; no entrar en specs profundas salvo que el corpus lo requiera.)
+
+6. Technical Assessment
+
+Evaluación de infraestructura y datos basada en el corpus. Si no se menciona, marca "(no responde)".
+
+Infraestructura Cloud: (AWS / Azure / GCP / On‑Premise). ¿Quién la administra?
+
+Experiencia Cloud: ¿Cliente nativo digital o en migración?
+
+Estrategia de Datos:
+
+Tipos de datos requeridos.
+
+Disponibilidad y ubicación (silos, data lake, APIs, archivos planos).
+
+7. Competitiveness and Strategic Positioning
+
+Narrativa diferencial de venta.
+
+Landscape Competitivo: otros proveedores mencionados (si existen).
+
+La Ventaja Santex: por qué Santex es ideal para este caso (conecta pains con fortalezas).
+
+Narrativa Diferencial: 1 frase/párrafo que sintetiza la propuesta de valor.
+
+8. Roadmap Comercial / Próximos Pasos
+
+Plan de acción inmediato.
+
+Próximos Hitos: pasos siguientes concretos derivados del corpus.
+
+Criterios de Salida: qué falta definir/validar para cerrar propuesta.
+
+# QUALITY CHECK BEFORE YOU ANSWER
+
+Before producing the final DSP, silently verify:
+
+Every section exists and follows the exact headings.
+
+No section is left blank; use "(no responde)" where needed.
+
+No invented facts. Only use information from the input files. 
+
+The result reads like a Santex senior consultant deliverable.
+
+Return the Markdown DSP now.`;
+
+  const userPrompt = `Analiza el siguiente corpus de documentos y genera el Deal Strategy Plan en formato Markdown:
+
+OPORTUNIDAD: ${opportunityName}
+CLIENTE: ${clientName}
+
+CORPUS DE DOCUMENTOS:
 
 ${corpus}
 
-Genera el JSON siguiendo este schema EXACTO. IMPORTANTE: Los arrays marcados con [OBJECTS] deben contener objetos, NO strings:
+Genera el DSP completo en Markdown siguiendo la estructura especificada en las instrucciones del sistema.`;
 
-{
-  "deal_strategy_plan": {
-    "project_objective": {
-      "purpose": "Definir el objetivo estratégico que persigue el cliente con la iniciativa.",
-      "strategic_objective": "",
-      "success_criteria": "",
-      "notes": ""
-    },
-    "use_case": {
-      "purpose": "Describir el problema concreto a resolver y su impacto en el negocio.",
-      "problem_to_solve": "",
-      "current_consequences": "",
-      "business_impact": "",
-      "priority_level": "",
-      "priority_rationale": "",
-      "notes": ""
-    },
-    "bundles": {
-      "purpose": "Identificar si aplica un bundle de aceleración.",
-      "recommended_bundle": "",
-      "bundle_options_considered": [
-        {
-          "bundle": "nombre del bundle",
-          "fit_reason": "razón por la que aplica"
-        }
-      ],
-      "notes": ""
-    },
-    "preliminary_solution_approach": {
-      "purpose": "Definir el abordaje inicial según claridad del proyecto y madurez tecnológica.",
-      "recommended_approach": "",
-      "approach_rationale": "",
-      "assumptions": ["string", "string"],
-      "open_questions": ["string", "string"],
-      "notes": ""
-    },
-    "functionalities_description": {
-      "purpose": "Listar funcionalidades iniciales esperadas, sin detalle técnico profundo.",
-      "expected_functionalities": [
-        {
-          "name": "Nombre de la funcionalidad",
-          "description": "Descripción detallada",
-          "business_value": "Valor que aporta al negocio"
-        }
-      ],
-      "out_of_scope": ["string", "string"],
-      "notes": ""
-    },
-    "technical": {
-      "purpose": "Evaluar infraestructura y disponibilidad de datos.",
-      "cloud_environment": "",
-      "cloud_experience": "",
-      "infrastructure_owner": "",
-      "required_data": [
-        {
-          "data_type": "Tipo de dato",
-          "availability": "Disponibilidad actual",
-          "location": "Ubicación del dato"
-        }
-      ],
-      "data_gaps_or_risks": ["string", "string"],
-      "notes": ""
-    },
-    "competitiveness_and_strategic_positioning": {
-      "purpose": "Mapear el entorno competitivo y construir una narrativa diferencial.",
-      "competitors_or_alternatives": [
-        {
-          "name": "Nombre del competidor",
-          "status_or_role": "Estado o rol",
-          "strengths": "Fortalezas",
-          "weaknesses": "Debilidades"
-        }
-      ],
-      "santex_advantages": ["string", "string"],
-      "differentiation_narrative": "",
-      "notes": ""
-    },
-    "commercial_roadmap_next_steps": {
-      "purpose": "Establecer hitos comerciales y criterios de salida.",
-      "next_steps": [
-        {
-          "step": "Descripción del paso",
-          "owner": "Responsable",
-          "expected_date_or_window": "Fecha esperada",
-          "exit_criteria": "Criterios de salida"
-        }
-      ],
-      "dependencies": ["string", "string"],
-      "notes": ""
-    },
-    "meta": {
-      "opportunity_id": "${opportunityId}",
-      "generated_from_inputs": ${JSON.stringify(inputNames)},
-      "confidence_level": "high/medium/low",
-      "missing_information_summary": ""
-    }
-  }
-}
+  try {
+    console.log('Llamando a Lovable AI para generar DSP en Markdown...');
+    
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.3,
+      }),
+    });
 
-RECUERDA: Devuelve SOLO el JSON, sin \`\`\`json ni otros wrappers de markdown.`;
-
-  let attempt = 0;
-  const maxAttempts = 2;
-
-  while (attempt < maxAttempts) {
-    attempt++;
-    console.log(`Intento ${attempt} de ${maxAttempts} para generar DSP`);
-
-    try {
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.3,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error en Lovable AI:', response.status, errorText);
-        
-        if (response.status === 429) {
-          throw new Error('Límite de tasa excedido. Por favor, intenta más tarde.');
-        }
-        if (response.status === 402) {
-          throw new Error('Se requiere pago. Por favor, agrega créditos a tu workspace.');
-        }
-        throw new Error(`Error en AI Gateway: ${response.status}`);
-      }
-
-      const aiResponse = await response.json();
-      const content = aiResponse.choices?.[0]?.message?.content;
-
-      if (!content) {
-        throw new Error('No se recibió contenido del AI');
-      }
-
-      console.log('Respuesta del AI (primeros 500 chars):', content.substring(0, 500));
-
-      // Limpiar el contenido de markdown si existe
-      let jsonString = content.trim();
-      if (jsonString.startsWith('```json')) {
-        jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (jsonString.startsWith('```')) {
-        jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
-
-      // Intentar parsear el JSON
-      const parsedJSON = JSON.parse(jsonString);
-      console.log('JSON parseado correctamente');
-
-      // Validar contra el schema
-      const validatedData = dspSchema.parse(parsedJSON);
-      console.log('✓ JSON validado correctamente contra schema');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error en Lovable AI:', response.status, errorText);
       
-      return validatedData;
-
-    } catch (error) {
-      console.error(`Error en intento ${attempt}:`, error);
-      
-      if (attempt >= maxAttempts) {
-        throw new Error('No se pudo estructurar el DSP después de múltiples intentos. Por favor, reintentar.');
+      if (response.status === 429) {
+        throw new Error('Límite de tasa excedido. Por favor, intenta más tarde.');
       }
-
-      // Si es el primer intento, intentar de nuevo con prompt correctivo
-      if (attempt === 1 && error instanceof Error) {
-        console.log('Reintentando con prompt correctivo...');
-        
-        // Extraer información del error de validación
-        let errorDetails = error.message;
-        if (error.name === 'ZodError') {
-          errorDetails = `Error de validación de schema. Los siguientes campos tienen problemas:
-          
-${error.message}
-
-CORRECCIONES NECESARIAS:
-- "expected_functionalities" debe ser un array de OBJETOS con propiedades: name, description, business_value
-  Ejemplo: [{"name": "Gestión de usuarios", "description": "Sistema de registro y autenticación", "business_value": "Mejora la seguridad"}]
-  
-- "required_data" debe ser un array de OBJETOS con propiedades: data_type, availability, location
-  Ejemplo: [{"data_type": "Datos de clientes", "availability": "Disponible en CRM", "location": "Base de datos SQL"}]
-  
-- "next_steps" debe ser un array de OBJETOS con propiedades: step, owner, expected_date_or_window, exit_criteria
-  Ejemplo: [{"step": "Reunión con stakeholders", "owner": "PM", "expected_date_or_window": "Semana 1", "exit_criteria": "Aprobación de requisitos"}]
-
-NO uses strings simples en estos arrays. Usa OBJETOS con todas las propiedades requeridas.`;
-        }
-        
-        // Modificar el userPrompt para el segundo intento
-        const correctivePrompt = `${userPrompt}
-
-CORRECCIÓN REQUERIDA - El intento anterior tuvo estos errores:
-${errorDetails}
-
-Por favor, genera el JSON nuevamente asegurando que TODOS los arrays que deben contener objetos efectivamente los contengan con todas sus propiedades.`;
-        
-        // Reintentar con el prompt correctivo en el siguiente ciclo
-        continue;
+      if (response.status === 402) {
+        throw new Error('Se requiere pago. Por favor, agrega créditos a tu workspace.');
       }
+      throw new Error(`Error en AI Gateway: ${response.status}`);
     }
-  }
 
-  throw new Error('No se pudo generar el DSP');
+    const aiResponse = await response.json();
+    const markdown = aiResponse.choices?.[0]?.message?.content;
+
+    if (!markdown) {
+      throw new Error('No se recibió contenido del AI');
+    }
+
+    console.log('✓ DSP en Markdown generado exitosamente');
+    console.log(`Tamaño del Markdown: ${markdown.length} caracteres`);
+    
+    // Limpiar markdown fences si existen
+    let cleanedMarkdown = markdown.trim();
+    if (cleanedMarkdown.startsWith('```markdown')) {
+      cleanedMarkdown = cleanedMarkdown.replace(/^```markdown\s*/, '').replace(/\s*```$/, '');
+    } else if (cleanedMarkdown.startsWith('```')) {
+      cleanedMarkdown = cleanedMarkdown.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+    
+    return cleanedMarkdown;
+
+  } catch (error) {
+    console.error('Error generando DSP:', error);
+    throw error;
+  }
 }
-
-// Note: In edge function, we inline the template to avoid external dependencies
-// This is the same template as src/templates/dealStrategyPlan.ts
-function generateMarkdownFromDSP(dsp: any, opportunityName: string): string {
-  const data = dsp.deal_strategy_plan;
-
-  let md = `# Deal Strategy Plan\n\n`;
-  md += `**${opportunityName}**\n\n`;
-  md += `---\n\n`;
-
-  // 1. Objetivo del Proyecto
-  md += `## 1. Objetivo del Proyecto\n\n`;
-  md += `> ${data.project_objective.purpose}\n\n`;
-  md += `### Objetivo Estratégico\n\n`;
-  md += `${data.project_objective.strategic_objective || 'N/A'}\n\n`;
-  md += `### Criterios de Éxito\n\n`;
-  md += `${data.project_objective.success_criteria || 'N/A'}\n\n`;
-  if (data.project_objective.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.project_objective.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 2. Use Case
-  md += `## 2. Use Case\n\n`;
-  md += `> ${data.use_case.purpose}\n\n`;
-  md += `### Problema a Resolver\n\n`;
-  md += `${data.use_case.problem_to_solve || 'N/A'}\n\n`;
-  md += `### Consecuencias Actuales\n\n`;
-  md += `${data.use_case.current_consequences || 'N/A'}\n\n`;
-  md += `### Impacto en el Negocio\n\n`;
-  md += `${data.use_case.business_impact || 'N/A'}\n\n`;
-  md += `### Nivel de Prioridad\n\n`;
-  md += `**${data.use_case.priority_level}**\n\n`;
-  md += `### Justificación de Prioridad\n\n`;
-  md += `${data.use_case.priority_rationale || 'N/A'}\n\n`;
-  if (data.use_case.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.use_case.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 3. Bundles
-  md += `## 3. Bundles\n\n`;
-  md += `> ${data.bundles.purpose}\n\n`;
-  md += `### Bundle Recomendado\n\n`;
-  md += `${data.bundles.recommended_bundle || 'N/A'}\n\n`;
-  if (data.bundles.bundle_options_considered?.length > 0) {
-    md += `### Opciones Consideradas\n\n`;
-    md += `| Bundle | Razón de Fit |\n`;
-    md += `|--------|-------------|\n`;
-    data.bundles.bundle_options_considered.forEach((opt: any) => {
-      md += `| ${opt.bundle} | ${opt.fit_reason} |\n`;
-    });
-    md += `\n`;
-  }
-  if (data.bundles.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.bundles.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 4. Enfoque Preliminar de Solución
-  md += `## 4. Enfoque Preliminar de Solución\n\n`;
-  md += `> ${data.preliminary_solution_approach.purpose}\n\n`;
-  md += `### Enfoque Recomendado\n\n`;
-  md += `${data.preliminary_solution_approach.recommended_approach || 'N/A'}\n\n`;
-  md += `### Fundamentación del Enfoque\n\n`;
-  md += `${data.preliminary_solution_approach.approach_rationale || 'N/A'}\n\n`;
-  if (data.preliminary_solution_approach.assumptions?.length > 0) {
-    md += `### Supuestos\n\n`;
-    data.preliminary_solution_approach.assumptions.forEach((assumption: string) => {
-      md += `- ${assumption}\n`;
-    });
-    md += `\n`;
-  }
-  if (data.preliminary_solution_approach.open_questions?.length > 0) {
-    md += `### Preguntas Abiertas\n\n`;
-    data.preliminary_solution_approach.open_questions.forEach((question: string) => {
-      md += `- ${question}\n`;
-    });
-    md += `\n`;
-  }
-  if (data.preliminary_solution_approach.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.preliminary_solution_approach.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 5. Descripción de Funcionalidades
-  md += `## 5. Descripción de Funcionalidades\n\n`;
-  md += `> ${data.functionalities_description.purpose}\n\n`;
-  if (data.functionalities_description.expected_functionalities?.length > 0) {
-    md += `### Funcionalidades Esperadas\n\n`;
-    md += `| Funcionalidad | Descripción | Valor de Negocio |\n`;
-    md += `|---------------|-------------|------------------|\n`;
-    data.functionalities_description.expected_functionalities.forEach((func: any) => {
-      md += `| ${func.name} | ${func.description} | ${func.business_value} |\n`;
-    });
-    md += `\n`;
-  }
-  if (data.functionalities_description.out_of_scope?.length > 0) {
-    md += `### Fuera de Alcance\n\n`;
-    data.functionalities_description.out_of_scope.forEach((item: string) => {
-      md += `- ${item}\n`;
-    });
-    md += `\n`;
-  }
-  if (data.functionalities_description.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.functionalities_description.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 6. Aspectos Técnicos
-  md += `## 6. Aspectos Técnicos\n\n`;
-  md += `> ${data.technical.purpose}\n\n`;
-  md += `### Entorno Cloud\n\n`;
-  md += `${data.technical.cloud_environment || 'N/A'}\n\n`;
-  md += `### Experiencia Cloud\n\n`;
-  md += `${data.technical.cloud_experience || 'N/A'}\n\n`;
-  md += `### Propietario de Infraestructura\n\n`;
-  md += `${data.technical.infrastructure_owner || 'N/A'}\n\n`;
-  if (data.technical.required_data?.length > 0) {
-    md += `### Datos Requeridos\n\n`;
-    md += `| Tipo de Dato | Disponibilidad | Ubicación |\n`;
-    md += `|--------------|----------------|----------|\n`;
-    data.technical.required_data.forEach((d: any) => {
-      md += `| ${d.data_type} | ${d.availability} | ${d.location} |\n`;
-    });
-    md += `\n`;
-  }
-  if (data.technical.data_gaps_or_risks?.length > 0) {
-    md += `### Gaps o Riesgos de Datos\n\n`;
-    data.technical.data_gaps_or_risks.forEach((risk: string) => {
-      md += `- ${risk}\n`;
-    });
-    md += `\n`;
-  }
-  if (data.technical.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.technical.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 7. Competitividad y Posicionamiento Estratégico
-  md += `## 7. Competitividad y Posicionamiento Estratégico\n\n`;
-  md += `> ${data.competitiveness_and_strategic_positioning.purpose}\n\n`;
-  if (data.competitiveness_and_strategic_positioning.competitors_or_alternatives?.length > 0) {
-    md += `### Competidores o Alternativas\n\n`;
-    md += `| Nombre | Estado/Rol | Fortalezas | Debilidades |\n`;
-    md += `|--------|------------|------------|-------------|\n`;
-    data.competitiveness_and_strategic_positioning.competitors_or_alternatives.forEach((comp: any) => {
-      md += `| ${comp.name} | ${comp.status_or_role} | ${comp.strengths} | ${comp.weaknesses} |\n`;
-    });
-    md += `\n`;
-  }
-  if (data.competitiveness_and_strategic_positioning.santex_advantages?.length > 0) {
-    md += `### Ventajas de Santex\n\n`;
-    data.competitiveness_and_strategic_positioning.santex_advantages.forEach((adv: string) => {
-      md += `- ${adv}\n`;
-    });
-    md += `\n`;
-  }
-  md += `### Narrativa de Diferenciación\n\n`;
-  md += `${data.competitiveness_and_strategic_positioning.differentiation_narrative || 'N/A'}\n\n`;
-  if (data.competitiveness_and_strategic_positioning.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.competitiveness_and_strategic_positioning.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // 8. Roadmap Comercial y Siguientes Pasos
-  md += `## 8. Roadmap Comercial y Siguientes Pasos\n\n`;
-  md += `> ${data.commercial_roadmap_next_steps.purpose}\n\n`;
-  if (data.commercial_roadmap_next_steps.next_steps?.length > 0) {
-    md += `### Siguientes Pasos\n\n`;
-    md += `| Paso | Responsable | Fecha Esperada | Criterios de Salida |\n`;
-    md += `|------|-------------|----------------|---------------------|\n`;
-    data.commercial_roadmap_next_steps.next_steps.forEach((step: any) => {
-      md += `| ${step.step} | ${step.owner} | ${step.expected_date_or_window} | ${step.exit_criteria} |\n`;
-    });
-    md += `\n`;
-  }
-  if (data.commercial_roadmap_next_steps.dependencies?.length > 0) {
-    md += `### Dependencias\n\n`;
-    data.commercial_roadmap_next_steps.dependencies.forEach((dep: string) => {
-      md += `- ${dep}\n`;
-    });
-    md += `\n`;
-  }
-  if (data.commercial_roadmap_next_steps.notes) {
-    md += `### Notas\n\n`;
-    md += `${data.commercial_roadmap_next_steps.notes}\n\n`;
-  }
-  md += `---\n\n`;
-
-  // Metadata
-  md += `## Metadata\n\n`;
-  md += `**Opportunity ID:** ${data.meta.opportunity_id}\n\n`;
-  md += `**Generated from inputs:**\n`;
-  data.meta.generated_from_inputs.forEach((input: string) => {
-    md += `- ${input}\n`;
-  });
-  md += `\n`;
-  md += `**Confidence Level:** ${data.meta.confidence_level}\n\n`;
-  md += `**Missing Information Summary:**\n\n`;
-  md += `${data.meta.missing_information_summary}\n`;
-
-  return md;
-}
-
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -725,11 +382,9 @@ Deno.serve(async (req) => {
 
     // 5. Descargar y extraer texto de cada PDF
     const corpus: string[] = [];
-    const inputNames: string[] = [];
 
     for (const input of inputs) {
       console.log(`Procesando input: ${input.input_name}`);
-      inputNames.push(input.input_name);
 
       try {
         // Download PDF from storage
@@ -778,16 +433,13 @@ Deno.serve(async (req) => {
 
     console.log(`Corpus total: ${fullCorpus.length} caracteres`);
 
-    // 6. Llamar a Lovable AI para generar el DSP JSON
+    // 6. Llamar a Lovable AI para generar el DSP en Markdown
     console.log('Generando DSP con AI...');
-    const dspData = await generateDSPWithAI(fullCorpus, opportunity_id, inputNames);
+    const clientName = opportunity.client?.client_name || 'Cliente';
+    const markdown = await generateDSPWithAI(fullCorpus, opportunity.opportunity_name, clientName);
     console.log('DSP generado exitosamente');
 
-    // 7. Generar Markdown del DSP
-    console.log('Generando Markdown...');
-    const markdown = generateMarkdownFromDSP(dspData, opportunity.opportunity_name);
-
-    // 8. Crear bucket de artifacts si no existe
+    // 7. Crear bucket de artifacts si no existe
     const { data: buckets } = await supabase.storage.listBuckets();
     const artifactsBucketExists = buckets?.some(b => b.name === 'artifacts-files');
     
@@ -803,7 +455,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 9. Calcular la versión (contar DSPs existentes + 1)
+    // 8. Calcular la versión (contar DSPs existentes + 1)
     const { data: existingDsps, error: countError } = await supabase
       .from('artifacts')
       .select('artifact_id', { count: 'exact' })
@@ -813,7 +465,7 @@ Deno.serve(async (req) => {
     const version = (existingDsps?.length || 0) + 1;
     console.log(`Generando DSP versión ${version}`);
 
-    // 10. Guardar Markdown en storage con formato: opportunities/{opportunity_id}/dsp-v{version}.md
+    // 9. Guardar Markdown en storage con formato: opportunities/{opportunity_id}/dsp-v{version}.md
     const storagePath = `opportunities/${opportunity_id}/dsp-v${version}.md`;
 
     console.log('Guardando Markdown en storage:', storagePath);
@@ -842,7 +494,7 @@ Deno.serve(async (req) => {
 
     const artifactUrl = urlData?.signedUrl || '';
 
-    // 11. Insertar registro en artifacts
+    // 10. Insertar registro en artifacts
     console.log('Insertando registro en tabla artifacts...');
     const { data: artifact, error: insertError } = await supabase
       .from('artifacts')
@@ -871,7 +523,7 @@ Deno.serve(async (req) => {
 
     console.log('=== DSP generado exitosamente ===');
 
-    // 12. Retornar resultado
+    // 11. Retornar resultado
     return new Response(
       JSON.stringify({ 
         success: true,
