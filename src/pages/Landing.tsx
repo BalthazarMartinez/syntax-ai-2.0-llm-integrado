@@ -22,7 +22,7 @@ const Landing = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pt-20 md:pt-32 px-4">
         <div className="max-w-4xl w-full text-center space-y-8">
           {/* Logo/Brand Name */}
           <h1 className="text-6xl md:text-7xl font-bold text-foreground font-brand">
