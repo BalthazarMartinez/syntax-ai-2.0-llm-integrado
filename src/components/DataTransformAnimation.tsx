@@ -79,7 +79,7 @@ const DataTransformAnimation = () => {
 
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      <div className="relative w-96 h-96">
+      <div className="relative w-full h-full max-w-2xl max-h-[600px]">
         
         {/* Phase 1: Input Elements - Data Collection */}
         <AnimatePresence>
@@ -290,7 +290,7 @@ const DataTransformAnimation = () => {
           {phase === 'output' && (
             <motion.div
               key={`output-${iteration}`}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-80 rounded-xl border-2 p-6 flex flex-col gap-4 shadow-xl"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-72 rounded-xl border-2 p-5 flex flex-col gap-3 shadow-xl"
               style={{
                 borderColor: 'hsl(var(--primary))',
                 background: 'hsl(var(--background))',
@@ -318,7 +318,7 @@ const DataTransformAnimation = () => {
             >
               {/* Typed Title - Deal Strategy Plan */}
               <motion.div
-                className="w-full min-h-12 flex items-center font-semibold text-lg"
+                className="w-full min-h-10 flex items-center font-semibold text-base"
                 style={{ 
                   color: 'hsl(45, 90%, 55%)',
                   textShadow: '0 0 20px hsl(45, 90%, 60% / 0.3)',
@@ -342,7 +342,7 @@ const DataTransformAnimation = () => {
               {[90, 95, 70, 85, 80, 90, 65].map((width, i) => (
                 <motion.div
                   key={i}
-                  className="h-3 rounded-full"
+                  className="h-2.5 rounded-full"
                   style={{
                     background: 'hsl(var(--primary))',
                     opacity: 0.6,
@@ -359,7 +359,7 @@ const DataTransformAnimation = () => {
 
               {/* Decorative accent line */}
               <motion.div
-                className="w-full h-1 rounded-full mt-3"
+                className="w-full h-1 rounded-full mt-2"
                 style={{ 
                   background: 'hsl(45, 90%, 60%)',
                   boxShadow: '0 0 10px hsl(45, 90%, 60% / 0.4)',
