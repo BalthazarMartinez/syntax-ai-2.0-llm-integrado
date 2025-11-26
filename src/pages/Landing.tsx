@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import DataTransformAnimation from '@/components/DataTransformAnimation';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -27,9 +28,9 @@ const Landing = () => {
           inteligencia artificial avanzada
         </p>
 
-        {/* Animation Space - Placeholder for future animation */}
-        <div className="w-full h-64 md:h-80 bg-muted/30 rounded-lg border border-border/50 flex items-center justify-center my-12">
-          <span className="text-muted-foreground">Espacio para animación</span>
+        {/* Animation */}
+        <div className="w-full h-64 md:h-80 my-12">
+          <DataTransformAnimation />
         </div>
 
         {/* Login Button */}
