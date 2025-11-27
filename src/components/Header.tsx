@@ -20,9 +20,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-white">
-      <div className="container flex h-20 items-center justify-between px-8">
+      <div className="container grid grid-cols-3 h-20 items-center px-8">
         <div 
-          className="flex items-center gap-2 cursor-pointer" 
+          className="flex items-center gap-2 cursor-pointer justify-start" 
           onClick={() => navigate('/')}
         >
           <span className="text-2xl font-bold text-foreground font-brand">
@@ -30,7 +30,7 @@ export function Header() {
           </span>
         </div>
         
-        <div className="flex items-center justify-center flex-1">
+        <div className="flex items-center justify-center">
           <img 
             src={logo} 
             alt="Syntax Logo" 
@@ -39,7 +39,7 @@ export function Header() {
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 justify-end">
           <LanguageSelector />
           <span className="text-sm font-medium text-foreground">
             {t('header.hello')}, {user?.email?.split('@')[0] || 'Usuario'}
