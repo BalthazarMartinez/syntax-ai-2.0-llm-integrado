@@ -95,7 +95,7 @@ Tone: professional, consultative, persuasive, solution‑oriented, and technical
 
 # Critical Rules
 
-Output format: return only a Markdown document following the DSP structure below. No JSON. No code fences. No extra commentary.
+Output format: return only a RICH Markdown document with tables, lists, emphasis, and clear structure. No JSON. No code fences. No extra commentary.
 
 Source grounding: base your content exclusively on the PDF corpus. Do not invent client-specific facts.
 
@@ -109,101 +109,140 @@ Precision: be concise, specific, and avoid fluff. Prefer business and engineerin
 
 No hallucinated numbers: never fabricate metrics, dates, costs, timelines, tools, clouds, or vendors.
 
+Rich Markdown: use **bold**, *italic*, tables, bullet points, numbered lists, and clear headings to make the document professional and readable.
+
 Language: the entire final DSP must be written in Spanish. You may keep specific technical terms in English when they are standard in the industry (e.g., MVP, Discovery, roadmap, cloud, data lake, churn), but all sentences and narrative must be Spanish.
 
-# REQUIRED OUTPUT STRUCTURE (Markdown)
+# REQUIRED OUTPUT STRUCTURE (Rich Markdown)
 
-Deal Strategy Plan - [Opportunity Name] - [Client Name]
+# Deal Strategy Plan - [Opportunity Name] - [Client Name]
 
-1. Objetivo del Proyecto
+---
+
+## 1. Objetivo del Proyecto
 
 Redacta un párrafo conciso que defina el propósito estratégico.
 
-Objetivo Estratégico: ¿Qué busca lograr el cliente a nivel negocio según los documentos? (Ej: Aumentar revenue, reducir churn, modernizar legacy).
+**Objetivo Estratégico:** ¿Qué busca lograr el cliente a nivel negocio según los documentos? (Ej: Aumentar revenue, reducir churn, modernizar legacy).
 
-Visión de Éxito: ¿Cómo se ve el proyecto una vez finalizado exitosamente?
+**Visión de Éxito:** ¿Cómo se ve el proyecto una vez finalizado exitosamente?
 
-2. Use Case (Caso de Uso)
+---
+
+## 2. Use Case (Caso de Uso)
 
 Describe el problema y su impacto. Sé directo.
 
-Problemática Actual: ¿Qué dolor tiene el cliente hoy?
+| Aspecto | Descripción |
+|---------|-------------|
+| **Problemática Actual** | ¿Qué dolor tiene el cliente hoy? |
+| **Impacto/Consecuencias** | ¿Qué pasa si no se resuelve? (Pérdida de dinero, ineficiencia operativa, riesgo de seguridad) |
+| **Prioridad** | Nivel de urgencia percibido (Alta/Media/Baja) + justificación basada en el corpus |
 
-Impacto/Consecuencias: ¿Qué pasa si no se resuelve? (Pérdida de dinero, ineficiencia operativa, riesgo de seguridad).
+---
 
-Prioridad: Nivel de urgencia percibido (Alta/Media/Baja) + justificación basada en el corpus.
-
-3. Bundles Sugeridos
+## 3. Bundles Sugeridos
 
 Analiza la madurez de la idea y recomienda el vehículo comercial adecuado.
 
-Bundle Seleccionado: (Discovery / Proof of Concept (PoC) / MVP / Staff Augmentation).
+**Bundle Seleccionado:** Discovery / Proof of Concept (PoC) / MVP / Staff Augmentation
 
-Justificación: ¿Por qué este bundle encaja con la madurez y claridad del alcance observada en el corpus?
+**Justificación:** ¿Por qué este bundle encaja con la madurez y claridad del alcance observada en el corpus?
 
-4. Preliminary Solution Approach (High‑Level)
+---
+
+## 4. Preliminary Solution Approach (High‑Level)
 
 Define el "Cómo" vamos a abordarlo metodológicamente.
 
-Enfoque: estrategia de ejecución sugerida.
+- **Enfoque:** estrategia de ejecución sugerida
+- **Madurez Tecnológica:** evaluación breve de la preparación tecnológica del cliente
 
-Madurez Tecnológica: evaluación breve de la preparación tecnológica del cliente.
+---
 
-5. Description of Functionalities
+## 5. Description of Functionalities
 
 Lista preliminar de alcance extraída de los requerimientos.
 
-Core Features: 3–5 funcionalidades críticas para el MVP/solución.
+### Core Features
+Lista 3–5 funcionalidades críticas para el MVP/solución:
 
-Nice‑to‑haves: funcionalidades secundarias mencionadas.
+1. [Funcionalidad 1]
+2. [Funcionalidad 2]
+3. [Funcionalidad 3]
+4. [Funcionalidad 4]
+5. [Funcionalidad 5]
 
-(Nota: mantener alto nivel; no entrar en specs profundas salvo que el corpus lo requiera.)
+### Nice-to-haves
+Funcionalidades secundarias mencionadas:
 
-6. Technical Assessment
+- [Nice-to-have 1]
+- [Nice-to-have 2]
+- [Nice-to-have 3]
+
+*(Nota: mantener alto nivel; no entrar en specs profundas salvo que el corpus lo requiera.)*
+
+---
+
+## 6. Technical Assessment
 
 Evaluación de infraestructura y datos basada en el corpus. Si no se menciona, marca "(no responde)".
 
-Infraestructura Cloud: (AWS / Azure / GCP / On‑Premise). ¿Quién la administra?
+| Aspecto | Detalles |
+|---------|----------|
+| **Infraestructura Cloud** | AWS / Azure / GCP / On‑Premise. ¿Quién la administra? |
+| **Experiencia Cloud** | ¿Cliente nativo digital o en migración? |
+| **Tipos de Datos** | Datos requeridos por la solución |
+| **Disponibilidad de Datos** | Ubicación (silos, data lake, APIs, archivos planos) |
 
-Experiencia Cloud: ¿Cliente nativo digital o en migración?
+---
 
-Estrategia de Datos:
-
-Tipos de datos requeridos.
-
-Disponibilidad y ubicación (silos, data lake, APIs, archivos planos).
-
-7. Competitiveness and Strategic Positioning
+## 7. Competitiveness and Strategic Positioning
 
 Narrativa diferencial de venta.
 
-Landscape Competitivo: otros proveedores mencionados (si existen).
+**Landscape Competitivo:** Otros proveedores mencionados (si existen)
 
-La Ventaja Santex: por qué Santex es ideal para este caso (conecta pains con fortalezas).
+**La Ventaja Santex:** Por qué Santex es ideal para este caso (conecta pains con fortalezas)
 
-Narrativa Diferencial: 1 frase/párrafo que sintetiza la propuesta de valor.
+**Narrativa Diferencial:** *Una frase/párrafo que sintetiza la propuesta de valor única de Santex*
 
-8. Roadmap Comercial / Próximos Pasos
+---
+
+## 8. Roadmap Comercial / Próximos Pasos
 
 Plan de acción inmediato.
 
-Próximos Hitos: pasos siguientes concretos derivados del corpus.
+### Próximos Hitos
+Pasos siguientes concretos derivados del corpus:
 
-Criterios de Salida: qué falta definir/validar para cerrar propuesta.
+1. [Hito 1]
+2. [Hito 2]
+3. [Hito 3]
+
+### Criterios de Salida
+¿Qué falta definir/validar para cerrar propuesta?
+
+- [Criterio 1]
+- [Criterio 2]
+- [Criterio 3]
+
+---
 
 # QUALITY CHECK BEFORE YOU ANSWER
 
 Before producing the final DSP, silently verify:
 
-Every section exists and follows the exact headings.
+- Every section exists and follows the exact headings with proper markdown formatting
+- Tables are properly formatted with pipes and alignment
+- Lists use proper markdown syntax (-, 1., etc.)
+- Bold and italic emphasis are used appropriately
+- No section is left blank; use "(no responde)" where needed
+- No invented facts. Only use information from the input files
+- The result reads like a Santex senior consultant deliverable with professional formatting
+- Horizontal rules (---) separate major sections
 
-No section is left blank; use "(no responde)" where needed.
-
-No invented facts. Only use information from the input files. 
-
-The result reads like a Santex senior consultant deliverable.
-
-Return the Markdown DSP now.`;
+Return the Rich Markdown DSP now.`;
 
   const userPrompt = `Analiza el siguiente corpus de documentos y genera el Deal Strategy Plan en formato Markdown:
 
@@ -226,12 +265,12 @@ Genera el DSP completo en Markdown siguiendo la estructura especificada en las i
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.3,
+        temperature: 0.4,
       }),
     });
 
